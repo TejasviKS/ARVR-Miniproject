@@ -161,7 +161,7 @@ Universal RP 17.6.0, Input System 1.20.0, AI Navigation 2.0.14, uGUI 2.6.0, Time
 | Problem | Fix |
 |---|---|
 | Models are missing or pink, or the `.fbx` files are tiny | Git LFS wasn't installed when you cloned. Run `git lfs install` and then `git lfs pull`. |
-| Everything is **pink/magenta** | The URP asset isn't assigned. Go to **Edit → Project Settings → Graphics** and set the render pipeline asset from `Assets/Settings/`. |
+| Everything is **pink/magenta** | The URP asset isn't assigned. Go to **Edit → Project Settings → Graphics** and set the render pipeline asset to `Assets/Settings/PC_RPAsset.asset`. |
 | The scene is empty when the project opens | Unity opened a blank scene. Double-click `Assets/Scenes/Classroom.unity`. |
 | "Portal can't find scene …" | Add `Cad_lab` to **File → Build Profiles → Scene List**. |
 | Mouse doesn't move the camera | Click inside the Game view. **Esc** releases the cursor. |
