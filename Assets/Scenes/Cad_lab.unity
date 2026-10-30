@@ -2006,6 +2006,120 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15, y: 2.5, z: 0.39}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &317900284
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 317900285}
+  - component: {fileID: 317900287}
+  - component: {fileID: 317900286}
+  m_Layer: 0
+  m_Name: Keeper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &317900285
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317900284}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7.7, y: 0.098, z: -3.44}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &317900286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317900284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77527ea45bc78c341b61f520cf35e03a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RiddleNPC
+  promptText: interact
+  npcName: The Keeper
+  model: {fileID: 0}
+  hologramLookOnModel: 1
+  hologramColor: {r: 0.2, g: 0.85, b: 1, a: 1}
+  introLines:
+  - So... you made it through the switches.
+  - I am the Keeper of this dimension.
+  - Answer my three riddles. Each mistake will cost you in the next room.
+  riddles:
+  - question: I have keys but open no locks. I have space but no room. You can enter, but you can't go outside.
+    options:
+    - A keyboard
+    - A piano
+    - A map
+    correctIndex: 0
+  - question: The more of me you take, the more you leave behind.
+    options:
+    - Footsteps
+    - Memories
+    - Time
+    correctIndex: 0
+  - question: In the classroom, where did you find the hidden code?
+    options:
+    - Under a desk
+    - Inside a cupboard
+    - On the blackboard
+    correctIndex: 0
+  correctLine: Correct.
+  wrongLine: Wrong.
+  scoreLine: '{0} out of {1}... {2} will scream for you.'
+  outroLines:
+  - The way is open. Step into the light by the door.
+  afterLine: Go. The way is open.
+  computersForScore: 04000000030000000200000001000000i
+  portal: {fileID: 847906905}
+  onFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  lettersPerSecond: 40
+  bobHeight: 0.06
+  turnSpeed: 60
+  lightRange: 4
+  lightIntensity: 1.5
+  humVolume: 0.35
+  hearingDistance: 10
+--- !u!136 &317900287
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317900284}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &343061329
 GameObject:
   m_ObjectHideFlags: 0
@@ -2673,7 +2787,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.3
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2681,11 +2795,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.15
+      value: 1.254
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalRotation.x
@@ -2693,7 +2807,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalRotation.z
@@ -2705,7 +2819,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 90
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 2339505380386532721, guid: cbb22e29c6f1a2c45ba4754c0ba6f4d4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -3916,6 +4030,150 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15, y: 2.5, z: 0.66}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &847906905
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 847906909}
+  - component: {fileID: 847906908}
+  - component: {fileID: 847906907}
+  - component: {fileID: 847906906}
+  - component: {fileID: 847906910}
+  m_Layer: 0
+  m_Name: LabPortal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &847906906
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847906905}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 8, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &847906907
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847906905}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9d6dc61d6d300c343b25c21589734abe, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &847906908
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847906905}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &847906909
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847906905}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.416, y: 1.2, z: -3.35}
+  m_LocalScale: {x: 0.1, y: 2.2, z: 1.1222}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1410315434}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &847906910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847906905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cdfccdff25ef3d46889491439de9cc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Portal
+  sceneToLoad: 
+  teleportTo: {fileID: 1410315434}
+  onUsed:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1915619156}
+        m_TargetAssemblyTypeName: BeepingComputerPuzzle, Assembly-CSharp
+        m_MethodName: StartPuzzleWithPenalty
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  spinSpeed: 0
 --- !u!1 &876261328
 GameObject:
   m_ObjectHideFlags: 0
@@ -4817,6 +5075,118 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.708, y: 0.689, z: 1.314}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1147298530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1147298534}
+  - component: {fileID: 1147298533}
+  - component: {fileID: 1147298532}
+  - component: {fileID: 1147298531}
+  m_Layer: 0
+  m_Name: DoorBlocker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1147298531
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1147298530}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1147298532
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1147298530}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1147298533
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1147298530}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1147298534
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1147298530}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.206, y: 1.2, z: -3.467}
+  m_LocalScale: {x: 0.42297, y: 2.9184, z: 1.6493436}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1152813666
 GameObject:
   m_ObjectHideFlags: 0
@@ -5883,6 +6253,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15, y: 2.5, z: 0.21}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1410315433
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1410315434}
+  m_Layer: 0
+  m_Name: LabArrival
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1410315434
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410315433}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 11.159997, y: -0.45454547, z: 1.1999998}
+  m_LocalScale: {x: 1, y: 0.45454547, z: 10}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 847906909}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1422913160
 GameObject:
   m_ObjectHideFlags: 0
@@ -6625,6 +7026,54 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15, y: 2.5, z: 0.42}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1731803743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1731803745}
+  - component: {fileID: 1731803744}
+  m_Layer: 0
+  m_Name: EndScreen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1731803744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1731803743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e952469f3877b764eb17dac511f0a89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EndScreen
+  title: You escaped the multiverse!
+  delay: 1.5
+  fadeTime: 1.5
+  firstScene: Classroom
+--- !u!4 &1731803745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1731803743}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7.31755, y: 1.32031, z: -3.79154}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1751578303
 GameObject:
   m_ObjectHideFlags: 0
@@ -7040,6 +7489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55f2d159b232db640b2da87db32898f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeepingComputerPuzzle
+  startAutomatically: 0
   computersToSwitchOff: 2
   delayBeforeNext: 2
   pickRandomly: 1
@@ -7073,7 +7523,19 @@ MonoBehaviour:
   progressMessage: Computer {0}/{1} shut down... wait, another one is beeping!
   onSolved:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1731803744}
+        m_TargetAssemblyTypeName: EndScreen, Assembly-CSharp
+        m_MethodName: Show
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1919980655
 GameObject:
   m_ObjectHideFlags: 0
@@ -7614,3 +8076,7 @@ SceneRoots:
   - {fileID: 1371513236}
   - {fileID: 498427299}
   - {fileID: 1915619155}
+  - {fileID: 317900285}
+  - {fileID: 1147298534}
+  - {fileID: 847906909}
+  - {fileID: 1731803745}

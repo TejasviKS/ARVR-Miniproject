@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-// VERSION 22
+// VERSION 23
 // "Find the beeping computer" puzzle for the CAD lab.
 // Put this on ONE empty object anywhere. Type the beeping monitor's name in "Beeping Computer Name"
 // (or leave it empty and place this object next to the computer you want).
 //
 // When the game starts it:
 //  1. finds every monitor in the lab (recognised by shape + name/material),
-//  2. gives each screen a glow (dim blue, like an idle PC),
+//  2. gives each screen a glow (dim blue, like an idle PC).
+// Then, when the puzzle STARTS (right away if "Start Automatically" is on, otherwise when
+// StartPuzzle / StartPuzzleWithPenalty is called, e.g. by the portal into Lab 1):
 //  3. makes ONE computer beep with 3D sound. Its screen looks almost like the others:
 //     it only glitches/flickers now and then, and shows a small error message you can read up close,
 //  4. when the player presses E on it: beeping stops, power-down sound, screen goes black,
@@ -18,8 +20,12 @@ using UnityEngine.Events;
 //  6. when all of them are off, "On Solved" runs and the Portal (if set) appears.
 public class BeepingComputerPuzzle : MonoBehaviour
 {
+    [Header("When it starts")]
+    [Tooltip("ON = start beeping as soon as the scene starts. OFF = wait until StartPuzzle / StartPuzzleWithPenalty is called (e.g. by a portal's On Used event).")]
+    public bool startAutomatically = true;
+
     [Header("Which computer beeps")]
-    [Tooltip("How many computers the player has to switch off, one after another, before the door opens")]
+    [Tooltip("How many computers the player has to switch off, one after another. When started with StartPuzzleWithPenalty, the riddle score decides instead (this is used if the riddles were skipped).")]
     [Min(1)] public int computersToSwitchOff = 2;
     [Tooltip("Seconds of silence before the next computer starts beeping")]
     public float delayBeforeNext = 2f;
@@ -77,6 +83,12 @@ public class BeepingComputerPuzzle : MonoBehaviour
     class Alarm { public Monitor m; public Material mat; public TwoSidedText label; }
     readonly List<Alarm> alarms = new List<Alarm>();
     int current = -1;
+
+    List<Monitor> monitors;                 // every monitor found in Start()
+    Shader glow;
+    readonly Dictionary<Transform, List<MeshRenderer>> screens = new Dictionary<Transform, List<MeshRenderer>>();
+    bool ready, started;                    // ready = Start() finished setting up
+    int pendingCount = -1;                  // StartPuzzle called before Start()? remember it here
 
     Material alarmMat;            // the CURRENT beeping computer's screen
     TwoSidedText alarmLabel;      // the CURRENT beeping computer's text
@@ -137,54 +149,22 @@ public class BeepingComputerPuzzle : MonoBehaviour
     {
         if (portal != null) portal.SetActive(false);
 
-        List<Monitor> monitors = FindMonitors();
+        monitors = FindMonitors();
         if (monitors.Count == 0)
         {
             Debug.LogError("[BeepingComputer] No monitors found. Looking for ~40x25 cm objects named \"" + monitorNamePrefix + "...\" or using a 'computer/monitor' material.", this);
             return;
         }
 
-        // Pick the computers that will beep, in order
-        List<Monitor> sequence = PickSequence(monitors);
-
-        // Screens
-        Shader glow = Shader.Find("Custom/ScreenGlow");
+        // Every screen glows dim blue like an idle PC (the beeping ones are chosen later, in StartPuzzle)
+        glow = Shader.Find("Custom/ScreenGlow");
         if (glow == null) Debug.LogWarning("[BeepingComputer] ScreenGlow shader not found: put ScreenGlow.shader in Assets/Resources.");
-        Material idleMat = null;
         if (glow != null && lightUpOtherScreens)
         {
-            idleMat = new Material(glow);
+            Material idleMat = new Material(glow);
             idleMat.color = idleScreenColor;
+            foreach (Monitor m in monitors) screens[m.t] = MakeScreen(m, idleMat);
         }
-        foreach (Monitor m in monitors)
-        {
-            if (sequence.Exists(x => x.t == m.t))
-            {
-                // A computer that will beep later: its own screen + hidden text, looks idle for now
-                var al = new Alarm { m = m };
-                if (glow != null)
-                {
-                    al.mat = new Material(glow);
-                    al.mat.color = idleScreenColor;
-                    MakeScreen(m, al.mat);
-                    al.label = MakeScreenText(m, obviousAlarm ? alarmText : subtleText);
-                    if (!obviousAlarm)
-                    {
-                        al.label.characterSize = 0.0012f;               // ~1 cm letters: readable only up close
-                        al.label.fontStyle = FontStyle.Normal;
-                        al.label.color = new Color(0.55f, 0.65f, 0.8f);  // same tone as the idle screens
-                    }
-                    al.label.gameObject.SetActive(false);
-                }
-                alarms.Add(al);
-            }
-            else if (idleMat != null)
-            {
-                MakeScreen(m, idleMat);
-            }
-        }
-        // keep the alarms in the picked order
-        alarms.Sort((x, y) => sequence.FindIndex(q => q.t == x.m.t).CompareTo(sequence.FindIndex(q => q.t == y.m.t)));
 
         // The "press E" box (moves to whichever computer is beeping)
         hitbox = new GameObject("BeepingComputer_Hitbox");
@@ -213,11 +193,66 @@ public class BeepingComputerPuzzle : MonoBehaviour
             {
                 if (monitors.Exists(mm => mm.t.name == opt)) matched++; else missing.Add(opt);
             }
-        Debug.Log("[BeepingComputer] v22: " + monitors.Count + " monitors found. Pick Randomly = " + pickRandomly +
+        Debug.Log("[BeepingComputer] v23: " + monitors.Count + " monitors found. Pick Randomly = " + pickRandomly +
                   ", random options found: " + matched + "/" + (randomOptions == null ? 0 : randomOptions.Length) +
                   (missing.Count > 0 ? " (NOT found: " + string.Join(", ", missing) + ")" : "") +
-                  ". Order: " + string.Join(" -> ", alarms.ConvertAll(x => x.m.t.name)), this);
+                  ". Start Automatically = " + startAutomatically, this);
 
+        ready = true;
+        if (pendingCount > 0) StartPuzzle(pendingCount);
+        else if (startAutomatically) StartPuzzle(computersToSwitchOff);
+    }
+
+    // Start with the number of computers decided by the riddle score (from GameProgress).
+    // No arguments, so it can be picked in a UnityEvent (e.g. the portal's On Used).
+    // If the riddles were skipped (Cad_lab played directly), uses Computers To Switch Off.
+    public void StartPuzzleWithPenalty()
+    {
+        bool fromRiddles = GameProgress.riddlesDone && GameProgress.computersToSwitchOff > 0;
+        StartPuzzle(fromRiddles ? GameProgress.computersToSwitchOff : computersToSwitchOff);
+    }
+
+    // Pick computersCount different computers and make the first one beep
+    public void StartPuzzle(int computersCount)
+    {
+        if (!ready) { pendingCount = computersCount; return; }   // Start() hasn't run yet: do it at the end of Start()
+        if (started) { Debug.LogWarning("[BeepingComputer] StartPuzzle was called again: ignored (already started).", this); return; }
+        started = true;
+
+        computersToSwitchOff = Mathf.Max(1, computersCount);
+        int options = randomOptions == null ? 0 : randomOptions.Length;
+        if (pickRandomly && options < computersToSwitchOff)
+            Debug.LogWarning("[BeepingComputer] Need " + computersToSwitchOff + " computers but Random Options only has " + options +
+                             ". Extra ones will be random monitors from the whole lab.", this);
+
+        // Pick the computers that will beep, in order
+        List<Monitor> sequence = PickSequence(monitors);
+        foreach (Monitor m in sequence)
+        {
+            // Each beeping computer gets its own screen material (so it can glitch alone) + hidden text
+            var al = new Alarm { m = m };
+            if (glow != null)
+            {
+                al.mat = new Material(glow);
+                al.mat.color = idleScreenColor;
+                if (screens.TryGetValue(m.t, out List<MeshRenderer> quads))
+                    foreach (MeshRenderer q in quads) q.sharedMaterial = al.mat;
+                else
+                    MakeScreen(m, al.mat);
+                al.label = MakeScreenText(m, obviousAlarm ? alarmText : subtleText);
+                if (!obviousAlarm)
+                {
+                    al.label.characterSize = 0.0012f;               // ~1 cm letters: readable only up close
+                    al.label.fontStyle = FontStyle.Normal;
+                    al.label.color = new Color(0.55f, 0.65f, 0.8f);  // same tone as the idle screens
+                }
+                al.label.gameObject.SetActive(false);
+            }
+            alarms.Add(al);
+        }
+
+        Debug.Log("[BeepingComputer] Puzzle started with " + alarms.Count + " computers. Order: " +
+                  string.Join(" -> ", alarms.ConvertAll(x => x.m.t.name)), this);
         StartBeeping(0);
     }
 
@@ -314,6 +349,7 @@ public class BeepingComputerPuzzle : MonoBehaviour
         }
 
         // All switched off: open the way
+        GameProgress.computersSwitchedOff = alarms.Count;
         if (player != null) player.ShowMessage(solvedMessage, 4f);
         if (portal != null) portal.SetActive(true);
         onSolved.Invoke();
@@ -487,8 +523,9 @@ public class BeepingComputerPuzzle : MonoBehaviour
 
     // ---------- Building the glowing screen ----------
     // The glow + text go on the FRONT of the monitor (the side facing its keyboard/chair).
-    void MakeScreen(Monitor m, Material mat)
+    List<MeshRenderer> MakeScreen(Monitor m, Material mat)
     {
+        var made = new List<MeshRenderer>();
         Vector3 e = m.b.extents;
         bool facesX = Mathf.Abs(m.facing.x) > 0.5f;
         float width = (facesX ? e.z : e.x) * 2f * 0.88f;
@@ -507,7 +544,9 @@ public class BeepingComputerPuzzle : MonoBehaviour
             MeshRenderer mr = q.GetComponent<MeshRenderer>();
             mr.sharedMaterial = mat;
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            made.Add(mr);
         }
+        return made;
     }
 
     // Text shown on both faces of the beeping monitor
