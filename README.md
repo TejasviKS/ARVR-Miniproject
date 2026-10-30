@@ -1,6 +1,8 @@
 # ARVR Miniproject: Escape-Room Puzzle Game (Unity)
 
-A first-person puzzle game built in Unity. You start in a **Classroom**, solve a light-switch code puzzle to open a portal, then go through to a **CAD Lab** where you have to find and switch off the beeping computers.
+A first-person puzzle game built in Unity. You start in a **Classroom** and solve a light-switch code puzzle to open a portal to the **CAD Lab**. There, a hologram professor asks you three riddles, and your score decides how many beeping computers you must find and switch off before you escape.
+
+Built to show: interaction, spatial (3D) audio, UI, lighting effects, and running on low-end laptops. All sounds are generated in code, so the project has no audio files.
 
 ---
 
@@ -72,8 +74,10 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 | **W A S D** | Walk |
 | **Shift** | Run |
 | **Mouse** | Look around |
-| **E** | Interact (sit, press switch, switch off computer). A prompt appears under the crosshair. |
-| **R** | Emergency reset: stand up and fix the camera if you get stuck |
+| **E** | Interact (sit, press switch, talk, switch off computer). A prompt appears under the crosshair. |
+| **E / Space / Left click** | In a conversation: skip the typing, then go to the next line |
+| **1 / 2 / 3** or click | Pick an answer to a riddle |
+| **R** | Emergency reset: stand up, close a conversation, and fix the camera if you get stuck. Progress is kept. |
 | **Esc** | Release the mouse cursor (click the Game view to lock it again) |
 
 ---
@@ -92,11 +96,30 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 The code is set on the `CodePanel` component in the Classroom scene (currently `3-7-1-9`). The sticky note reads it from there automatically, so if you change it the note updates too.
 </details>
 
-### Level 2: CAD Lab (`Cad_lab.unity`)
-- One computer in the lab is **beeping** (3D sound). Its screen glitches now and then and shows a small error message.
-- Follow the sound, look at the computer and press **E** to switch it off.
-- Then the next computer starts beeping. Switch off **2 computers** (you can change this) to solve the level.
-- The computers are picked at random from a list each time you play.
+### Level 2: The Keeper's riddles (`Cad_lab.unity`, bench room)
+- You arrive in an empty bench room with a glowing, see-through **hologram professor**, "The Keeper". You can hear his low hum from about 10 m away, and he slowly turns to face you.
+- Walk up to him and press **E** to talk. The text types out with little "voice" blips.
+- He asks **3 riddles**. Each has 3 answers in a different order every time, and you get **one try** per riddle. A right answer flashes green with a chime; a wrong answer flashes red with a buzz.
+- Your score sets the next level's difficulty:
+
+  | Riddles right | Computers to switch off |
+  |---|---|
+  | 3 | 1 |
+  | 2 | 2 |
+  | 1 | 3 |
+  | 0 | 4 |
+
+- After the last riddle, a **portal** appears by the door. It's one-way: walk in and you appear in the computer lab. The doorway is a solid wall, so you can't see or walk into the lab before solving, and you can't walk back afterwards.
+
+### Level 3: The beeping computers (`Cad_lab.unity`, Lab 1)
+- Going through the portal starts the puzzle. One computer is **beeping** (3D sound), and its screen glitches now and then and shows a small error message.
+- Follow the sound, look at the computer and press **E** to switch it off. Then the next one starts beeping somewhere else.
+- Switch off as many as your riddle score decided. The computers are picked at random each time you play.
+- If you play `Cad_lab` directly without the riddles (for testing), it uses 2 computers.
+
+### The end
+- When the last computer shuts down, the screen fades to dark and shows **"You escaped the multiverse!"** with your riddle score, the number of computers switched off, and your time.
+- **Play Again** restarts from the Classroom. **Quit** closes the game (or stops Play mode in the editor).
 
 ---
 
@@ -106,7 +129,7 @@ The code is set on the `CodePanel` component in the Classroom scene (currently `
 Assets/
 ├── Scenes/
 │   ├── Classroom.unity        Level 1: switch-code puzzle
-│   ├── Cad_lab.unity          Level 2: beeping-computer puzzle
+│   ├── Cad_lab.unity          Levels 2 and 3: riddle NPC + beeping-computer puzzle
 │   └── SampleScene.unity      Unity's default scene (not used, disabled in the build list)
 ├── Models/
 │   ├── CLASSROOM.fbx          Classroom 3D model (~15 MB, Git LFS)
@@ -117,6 +140,7 @@ Assets/
 ├── Scripts/                   Gameplay code (see below)
 ├── Editor/                    Editor-only tools for building colliders
 ├── Resources/
+│   ├── Hologram.shader        See-through glowing hologram (the Keeper)
 │   ├── ScreenGlow.shader      Glowing computer screens
 │   └── WorldText.shader       In-world text that gets hidden behind objects
 ├── Settings/                  URP render pipeline settings
@@ -137,9 +161,12 @@ ProjectSettings/               Input, physics, graphics, build scene list, etc.
 | `CodePanel.cs` | Classroom switchboard puzzle: finds the wall switches, numbers them, and checks the code you enter. |
 | `PanelSwitch.cs` | A single wall switch (added automatically by `CodePanel` when the game starts). |
 | `CodeNote.cs` | The sticky note under the desk that shows the code. |
-| `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes one computer beep, and moves on to the next one when you switch it off. |
+| `RiddleNPC.cs` | The hologram professor: builds his body from simple shapes, adds his light and 3D sounds, runs the dialogue and riddles, and saves the score. |
+| `GameProgress.cs` | Remembers the riddle score, the penalty and the start time while you move between scenes. |
+| `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes one computer beep, and moves on to the next one when you switch it off. It waits until the portal starts it. |
 | `ComputerSwitch.cs` | The invisible "press E" box on the beeping computer (created automatically). |
-| `Portal.cs` | Spinning portal that loads the next scene when you walk into it. |
+| `Portal.cs` | Portal you walk into. It either loads the next scene (Classroom → Cad_lab) or teleports you to a point in the same scene and then disappears (one-way, bench room → Lab 1). |
+| `EndScreen.cs` | The final screen: fade to dark, score and time, Play Again / Quit. |
 | `WorldTextUtil.cs` | Helper that applies the `WorldText` shader to 3D text. |
 
 ### Editor tools (`Assets/Editor/`)
@@ -164,6 +191,9 @@ Universal RP 17.6.0, Input System 1.20.0, AI Navigation 2.0.14, uGUI 2.6.0, Time
 | Everything is **pink/magenta** | The URP asset isn't assigned. Go to **Edit → Project Settings → Graphics** and set the render pipeline asset to `Assets/Settings/PC_RPAsset.asset`. |
 | The scene is empty when the project opens | Unity opened a blank scene. Double-click `Assets/Scenes/Classroom.unity`. |
 | "Portal can't find scene …" | Add `Cad_lab` to **File → Build Profiles → Scene List**. |
+| "Portal is not set up: its Teleport To slot is empty" | In Cad_lab, select **LabPortal** and drag **LabArrival** into its **Teleport To** slot. |
+| Can't walk into the portal in the bench room | Finish the Keeper's riddles first: the portal only appears after the last riddle. |
+| The Keeper or the portal looks pink | The shader didn't load. Check that `Hologram.shader` is in `Assets/Resources/`. |
 | Mouse doesn't move the camera | Click inside the Game view. **Esc** releases the cursor. |
 | Stuck in a seat or the camera is tilted | Press **R**. |
 | Lots of compile errors on first open | Wait for the package import to finish, then go to **Assets → Reimport All**. Also check you're using Unity 6000.6.3f1. |
