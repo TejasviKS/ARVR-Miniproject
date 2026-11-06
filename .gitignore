@@ -1,3 +1,6 @@
+# 7th floor assets
+/seventhFloor/
+
 # Unity generated folders
 /[Ll]ibrary/
 /[Tt]emp/
@@ -50,3 +53,6 @@ crashlytics-build.properties
 Thumbs.db
 
 # Note: .meta files inside Assets/ are intentionally NOT ignored.
+
+# Personal cleanup script for the MCP tooling (not part of the project)
+/uninstall-mcp-tooling.ps1
