@@ -39,6 +39,10 @@ public class CodePanel : MonoBehaviour
     public Color correctColor = new Color(0.2f, 1f, 0.3f);
     public Color wrongColor = new Color(1f, 0.15f, 0.1f);
     public float pushDepth = 0.004f;      // how far a switch moves in when pressed (metres)
+    [Tooltip("In a flat realm look (a RealmStyle in the scene) the switches become plain plates of this colour...")]
+    public Color flatSwitchColor = new Color(1f, 0.97f, 0.86f);
+    [Tooltip("...with numbers (and the sticky note's writing) in this dark ink")]
+    public Color flatInkColor = new Color(0.13f, 0.07f, 0.04f);
 
     readonly List<PanelSwitch> switches = new List<PanelSwitch>();
     readonly List<int> entered = new List<int>();
@@ -68,12 +72,14 @@ public class CodePanel : MonoBehaviour
         if (FindObjectsByType<CodePanel>().Length > 1)
             Debug.LogWarning("[CodePanel] There is more than one Code Panel in the scene! Keep only one.", this);
 
+        bool flatLook = FindAnyObjectByType<RealmStyle>(FindObjectsInactive.Include) != null;
         foreach (var (r, number) in order)
         {
             if (r.GetComponent<Collider>() == null) r.gameObject.AddComponent<MeshCollider>();
             if (r.GetComponent<PanelSwitch>() != null) continue;   // already set up by another panel
             PanelSwitch s = r.gameObject.AddComponent<PanelSwitch>();
             s.Setup(this, number);
+            if (flatLook) s.UseFlatLook(flatSwitchColor, flatInkColor);
             if (showNumberLabels) s.MakeLabel(outward);
             switches.Add(s);
         }

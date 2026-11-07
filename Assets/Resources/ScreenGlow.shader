@@ -9,7 +9,9 @@ Shader "Custom/ScreenGlow"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry+10" }
+        // Drawn just before transparent things (still writes depth like a solid screen). This way the flat
+        // "realm" look (RealmStyle), which paints over all solid geometry, doesn't wipe the screens out.
+        Tags { "RenderType"="Opaque" "Queue"="Transparent-1" }
         Cull Off
         Offset -1, -1
 

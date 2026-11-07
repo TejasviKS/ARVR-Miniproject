@@ -15,6 +15,10 @@ public abstract class Interactable : MonoBehaviour
     // Return false to temporarily disable the interaction
     public virtual bool CanInteract => true;
 
+    // Return true if a left mouse click on this should work like pressing E (e.g. wall switches).
+    // Off by default: seats and conversations use clicks for other things.
+    public virtual bool AcceptsClick => false;
+
     // What happens when the player presses E
     public abstract void Interact(PlayerInteractor player);
 

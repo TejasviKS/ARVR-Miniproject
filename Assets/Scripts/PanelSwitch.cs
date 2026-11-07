@@ -9,6 +9,8 @@ public class PanelSwitch : Interactable
     Material[] mats;
     TextMesh label;
     Color labelColor = Color.white;
+    bool flat;                 // flat "realm" look: the switch is a plain glowing plate (see UseFlatLook)
+    Color flatIdle, flatInk;
 
     public void Setup(CodePanel p, int number)
     {
@@ -26,18 +28,36 @@ public class PanelSwitch : Interactable
         }
     }
 
+    // The flat realm look (RealmStyle) paints every normal material one colour, which would hide the glow and the number.
+    // So in a realm the switch becomes a plain unlit plate: a light colour with a dark number, lit green/red/amber when used.
+    // Call this right after Setup and before MakeLabel.
+    public void UseFlatLook(Color idle, Color ink)
+    {
+        Shader shader = Shader.Find("Custom/ScreenGlow");
+        if (shader == null) return;
+        flat = true; flatIdle = idle; flatInk = ink; labelColor = ink;
+        Renderer r = GetComponent<Renderer>();
+        var fresh = new Material[r.sharedMaterials.Length];
+        for (int i = 0; i < fresh.Length; i++) fresh[i] = new Material(shader) { color = idle };
+        r.materials = fresh;
+        mats = r.materials;
+    }
+
+    public override bool AcceptsClick => true;          // E or left click both press it (the prompt only mentions E: shorter on screen)
     public override bool CanInteract => panel != null && panel.Ready;
     public override void Interact(PlayerInteractor player) => panel.Press(this, player);
 
     // Light up the switch (and its number) in a colour
     public void SetGlow(Color c)
     {
+        if (flat) { foreach (var m in mats) m.color = c; return; }
         foreach (var m in mats) m.SetColor("_EmissionColor", c * 1.5f);
         if (label != null) label.color = c;
     }
 
     public void ClearGlow()
     {
+        if (flat) { foreach (var m in mats) m.color = flatIdle; return; }
         foreach (var m in mats) m.SetColor("_EmissionColor", Color.black);
         if (label != null) label.color = labelColor;
     }
@@ -58,7 +78,8 @@ public class PanelSwitch : Interactable
         label.text = Number.ToString();
         label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         label.fontSize = 100;
-        label.characterSize = 0.0018f;          // about 2 cm tall
+        label.characterSize = flat ? 0.0024f : 0.0018f;          // about 2 cm tall (a bit bigger and bold in the flat look)
+        if (flat) label.fontStyle = FontStyle.Bold;
         label.anchor = TextAnchor.MiddleCenter;
         label.alignment = TextAlignment.Center;
         label.color = labelColor;

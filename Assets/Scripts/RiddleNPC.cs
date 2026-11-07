@@ -32,7 +32,7 @@ public class Riddle
 public class RiddleNPC : Interactable
 {
     [Header("Who")]
-    public string npcName = "The Keeper";
+    public string npcName = "Lab Asst. Gemini";
     [Tooltip("Optional: your own 3D model (a child of this object). Empty = a hologram is built from simple shapes.")]
     public GameObject model;
     [Tooltip("ON = your model also gets the see-through hologram look")]
@@ -44,7 +44,7 @@ public class RiddleNPC : Interactable
     public string[] introLines =
     {
         "So... you made it through the switches.",
-        "I am the Keeper of this dimension.",
+        "I am Lab Asst. Gemini, keeper of this dimension.",
         "Answer my three riddles. Each mistake will cost you in the next room.",
     };
     public Riddle[] riddles =

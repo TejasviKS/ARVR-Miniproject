@@ -16,7 +16,9 @@ public class PlayerInteractor : MonoBehaviour
 
     public Interactable Focused { get; private set; }  // what we're looking at
     public Interactable Locked { get; private set; }   // e.g. the seat we're sitting in
+    [HideInInspector] public bool hidePrompt;          // another script (e.g. the tutorial's note) is showing something over the screen
 
+    bool cursorWasLocked;
     string message;
     float messageUntil;
     GUIStyle promptStyle, messageStyle;
@@ -33,13 +35,19 @@ public class PlayerInteractor : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null || cam == null) return;
 
-        // EMERGENCY RESET: press R if anything gets stuck (instantly stand up, walking back on)
+        // EMERGENCY RESET: press R if anything gets stuck (instantly stand up, walking back on).
+        // In scenes that have a PlayerSpawn (the cabins) it also puts you back where you started.
         if (kb.rKey.wasPressedThisFrame)
         {
             if (Locked != null) Locked.ForceRelease(this);
             Locked = null;
             if (movement != null) { movement.enabled = false; movement.enabled = true; }  // re-sync camera
-            ShowMessage("View reset", 1f);
+            if (PlayerSpawn.Current != null)
+            {
+                PlayerSpawn.Current.ResetPlayer();
+                ShowMessage("Back at the start", 1.5f);
+            }
+            else ShowMessage("View reset", 1f);
         }
 
         // Safety net: if walking got switched off but nothing is holding us, switch it back on
@@ -54,8 +62,19 @@ public class PlayerInteractor : MonoBehaviour
             Focused = FindTarget();
         }
 
-        if (Focused != null && kb.eKey.wasPressedThisFrame)
+        // E always works. A left click works too on things that accept it (wall switches), but only when the
+        // mouse was already captured: the click that grabs the mouse back must not also press something.
+        var mouse = Mouse.current;
+        bool clicked = mouse != null && mouse.leftButton.wasPressedThisFrame
+                       && cursorWasLocked && Locked == null && Focused != null && Focused.AcceptsClick;
+
+        if (Focused != null && (kb.eKey.wasPressedThisFrame || clicked))
             Focused.Interact(this);
+    }
+
+    void LateUpdate()
+    {
+        cursorWasLocked = Cursor.lockState == CursorLockMode.Locked;   // as it was at the end of this frame
     }
 
     Interactable FindTarget()
@@ -112,7 +131,7 @@ public class PlayerInteractor : MonoBehaviour
     // Simple built-in UI (no Canvas setup needed)
     void OnGUI()
     {
-        if (promptStyle == null)
+        if (promptStyle == null || promptStyle.fontSize == 0)     // (font size 0 = Unity's GUI skin was not ready yet: build again)
         {
             promptStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 22 };
             promptStyle.normal.textColor = Color.white;
@@ -122,13 +141,15 @@ public class PlayerInteractor : MonoBehaviour
         float cx = Screen.width / 2f, cy = Screen.height / 2f;
 
         // Crosshair dot (bigger + yellow when looking at something usable)
-        bool active = Focused != null && Locked == null;
+        bool active = Focused != null && Locked == null && !hidePrompt;
         float size = active ? 10f : 5f;
+        GUI.color = new Color(0.08f, 0.04f, 0.1f, 0.85f);                // dark rim, so the dot reads on light or flat-colour rooms too
+        GUI.DrawTexture(new Rect(cx - size / 2 - 2f, cy - size / 2 - 2f, size + 4f, size + 4f), Texture2D.whiteTexture);
         GUI.color = active ? Color.yellow : Color.white;
         GUI.DrawTexture(new Rect(cx - size / 2, cy - size / 2, size, size), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        if (Focused != null)
+        if (Focused != null && !hidePrompt)
             GUI.Label(new Rect(0, cy + 30, Screen.width, 40), Focused.GetPrompt(), promptStyle);
 
         if (!string.IsNullOrEmpty(message) && Time.time < messageUntil)

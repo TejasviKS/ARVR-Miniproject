@@ -1600,7 +1600,7 @@ Transform:
   m_GameObject: {fileID: 89655331}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.098, y: 0.979, z: -4.147}
+  m_LocalPosition: {x: -12.098, y: 1.076, z: -4.147}
   m_LocalScale: {x: 0.34022254, y: 3.104409, z: 1.7161639}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2319,13 +2319,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RiddleNPC
   promptText: interact
-  npcName: The Keeper
+  npcName: Lab Asst. Gemini
   model: {fileID: 0}
   hologramLookOnModel: 1
   hologramColor: {r: 0.2, g: 0.85, b: 1, a: 1}
   introLines:
   - So... you made it through the switches.
-  - I am the Keeper of this dimension.
+  - I am Lab Asst. Gemini, keeper of this dimension.
   - Answer my three riddles. Each mistake will cost you in the next room.
   riddles:
   - question: I have keys but open no locks. I have space but no room. You can enter, but you can't go outside.
@@ -3325,6 +3325,62 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 509071903}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &509666324
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 509666326}
+  - component: {fileID: 509666325}
+  m_Layer: 0
+  m_Name: RealmStyle_BenchRoom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &509666325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 509666324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d48e2544ddeeb45a713149f57f594a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RealmStyle
+  fillColor: {r: 0.949, g: 0.541, b: 0.188, a: 1}
+  lineColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
+  voidColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
+  lineThickness: 4
+  depthThreshold: 0.04
+  creaseThreshold: 0.5
+  outlineFeatures:
+  - {fileID: 8149790415990666227, guid: 65bc7dbf4170f435aa868c779acfb082, type: 2}
+  - {fileID: 7871390591497979345, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
+  endsWhenUsed: {fileID: 847906910}
+  startsWhenUsed: {fileID: 0}
+  disablePostProcessing: 1
+--- !u!4 &509666326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 509666324}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &514106898
 GameObject:
   m_ObjectHideFlags: 0
@@ -4776,7 +4832,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  spinSpeed: 0
+  portalColor: {r: 0.18, g: 0.77, b: 0.71, a: 1}
+  accentColor: {r: 0.04, g: 0.18, b: 0.23, a: 1}
+  swirlSpeed: 1
+  glowLight: 1
+  hum: 1
+  humVolume: 0.25
+  useTransition: 1
 --- !u!1 &876261328
 GameObject:
   m_ObjectHideFlags: 0
@@ -5148,6 +5210,62 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15, y: 2.503, z: 4.68}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &951644965
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 951644967}
+  - component: {fileID: 951644966}
+  m_Layer: 0
+  m_Name: RealmStyle_Lab1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &951644966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951644965}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d48e2544ddeeb45a713149f57f594a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RealmStyle
+  fillColor: {r: 0.18, g: 0.77, b: 0.71, a: 1}
+  lineColor: {r: 0.04, g: 0.18, b: 0.23, a: 1}
+  voidColor: {r: 0.04, g: 0.18, b: 0.23, a: 1}
+  lineThickness: 4
+  depthThreshold: 0.04
+  creaseThreshold: 0.5
+  outlineFeatures:
+  - {fileID: 8149790415990666227, guid: 65bc7dbf4170f435aa868c779acfb082, type: 2}
+  - {fileID: 7871390591497979345, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
+  endsWhenUsed: {fileID: 0}
+  startsWhenUsed: {fileID: 847906910}
+  disablePostProcessing: 1
+--- !u!4 &951644967
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951644965}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &953626951
 GameObject:
   m_ObjectHideFlags: 0
@@ -5896,7 +6014,7 @@ Transform:
   m_GameObject: {fileID: 1147298530}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.208, y: 1.165, z: -3.467}
+  m_LocalPosition: {x: -5.208, y: 1.266, z: -3.467}
   m_LocalScale: {x: 0.3402225, y: 2.9184, z: 1.6699605}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7061,8 +7179,8 @@ Transform:
   m_GameObject: {fileID: 1375267853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.098, y: 2.494, z: -2.07}
-  m_LocalScale: {x: 0.34022254, y: 0.6069114, z: 2.5313418}
+  m_LocalPosition: {x: -12.098, y: 2.416, z: -2.07}
+  m_LocalScale: {x: 0.34022254, y: 0.42184135, z: 2.5313418}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 44876385}
@@ -8892,7 +9010,7 @@ MonoBehaviour:
   keyboardNamePrefix: Key_Board_Low
   lightUpOtherScreens: 1
   bothSides: 0
-  idleScreenColor: {r: 0.05, g: 0.15, b: 0.4, a: 1}
+  idleScreenColor: {r: 0.05, g: 0.22, b: 0.28, a: 1}
   obviousAlarm: 0
   alarmScreenColor: {r: 0.9, g: 0.08, b: 0.05, a: 1}
   glitchEvery: {x: 2.5, y: 6}
@@ -9691,3 +9809,5 @@ SceneRoots:
   - {fileID: 1147298534}
   - {fileID: 847906909}
   - {fileID: 1731803745}
+  - {fileID: 509666326}
+  - {fileID: 951644967}

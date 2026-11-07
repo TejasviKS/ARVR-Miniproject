@@ -18,6 +18,14 @@ public class CodeNote : MonoBehaviour
     {
         if (panel == null) panel = FindAnyObjectByType<CodePanel>();
         string text = panel != null ? panel.code : "????";
+        if (FindAnyObjectByType<RealmStyle>(FindObjectsInactive.Include) != null)
+        {
+            // flat realm look: a plain light paper note with dark writing, so it stands out from the flat colour
+            Shader glow = Shader.Find("Custom/ScreenGlow");
+            Renderer nr = GetComponent<Renderer>();
+            if (glow != null && nr != null) nr.material = new Material(glow) { color = panel != null ? panel.flatSwitchColor : new Color(1f, 0.97f, 0.86f) };
+            if (panel != null) inkColor = panel.flatInkColor;
+        }
         Write(text, flipSide ? -1 : +1);
     }
 
@@ -41,6 +49,7 @@ public class CodeNote : MonoBehaviour
         tm.anchor = TextAnchor.MiddleCenter;
         tm.alignment = TextAlignment.Center;
         tm.color = inkColor;
+        if (inkColor.maxColorComponent < 0.3f && FindAnyObjectByType<RealmStyle>(FindObjectsInactive.Include) != null) tm.fontStyle = FontStyle.Bold;   // flat look: bolder
         WorldTextUtil.Apply(tm);                   // hidden behind objects, not drawn through them
     }
 }

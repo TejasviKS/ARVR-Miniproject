@@ -75,9 +75,10 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 | **Shift** | Run |
 | **Mouse** | Look around |
 | **E** | Interact (sit, press switch, talk, switch off computer). A prompt appears under the crosshair. |
+| **Left click** | Press a wall switch (same as **E**, only for the switches) |
 | **E / Space / Left click** | In a conversation: skip the typing, then go to the next line |
 | **1 / 2 / 3** or click | Pick an answer to a riddle |
-| **R** | Emergency reset: stand up, close a conversation, and fix the camera if you get stuck. Progress is kept. |
+| **R** | Emergency reset: stand up, close a conversation, and fix the camera if you get stuck. Progress is kept. In the cabins it also puts you back at the spot you started at. |
 | **Esc** | Release the mouse cursor (click the Game view to lock it again) |
 
 ---
@@ -88,7 +89,7 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 - The wall switches are numbered like a keypad: **1 2 3 4 5 6** on the top row and **7 8 9 0** on the second row.
 - A sticky note with the code is hidden **under one of the desks**. Sit on a bench (press **E**) and look down to find it.
 - Press the switches in the right order. A right code flashes green and a **portal** appears; a wrong code flashes red and resets.
-- Walk into the portal to go to the CAD Lab.
+- Walk into the portal to go to the CAD Lab. The portal is an orange vortex (the colour of the next level): you rush in, a round wipe closes over the screen, and it opens again on the other side.
 
 <details>
 <summary>Spoiler: the code</summary>
@@ -96,8 +97,8 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 The code is set on the `CodePanel` component in the Classroom scene (currently `3-7-1-9`). The sticky note reads it from there automatically, so if you change it the note updates too.
 </details>
 
-### Level 2: The Keeper's riddles (`Cad_lab.unity`, bench room)
-- You arrive in an empty bench room with a glowing, see-through **hologram professor**, "The Keeper". You can hear his low hum from about 10 m away, and he slowly turns to face you.
+### Level 2: Lab Asst. Gemini's riddles (`Cad_lab.unity`, bench room)
+- You arrive in an empty bench room with a glowing, see-through **hologram professor**, "Lab Asst. Gemini". You can hear his low hum from about 10 m away, and he slowly turns to face you.
 - Walk up to him and press **E** to talk. The text types out with little "voice" blips.
 - He asks **3 riddles**. Each has 3 answers in a different order every time, and you get **one try** per riddle. A right answer flashes green with a chime; a wrong answer flashes red with a buzz.
 - Your score sets the next level's difficulty:
@@ -140,9 +141,14 @@ Assets/
 ├── Scripts/                   Gameplay code (see below)
 ├── Editor/                    Editor-only tools for building colliders
 ├── Resources/
-│   ├── Hologram.shader        See-through glowing hologram (the Keeper)
+│   ├── Hologram.shader        See-through glowing hologram (Lab Asst. Gemini)
+│   ├── HologramHostile.shader Hostile hologram (combat AIs): dark core, magenta rim, glitch
 │   ├── ScreenGlow.shader      Glowing computer screens
-│   └── WorldText.shader       In-world text that gets hidden behind objects
+│   ├── WorldText.shader       In-world text that gets hidden behind objects
+│   ├── PortalSwirl.shader     The vortex drawn on portals
+│   └── PortalWipe.shader      The round screen wipe used when going through a portal
+├── Shaders/
+│   └── RealmOutline.shader    Flat colour + outlines full-screen pass (the realm look)
 ├── Settings/                  URP render pipeline settings
 ├── TextMesh Pro/              TextMesh Pro resources (Unity package content)
 └── TutorialInfo/              Unity template readme (can be ignored)
@@ -165,7 +171,17 @@ ProjectSettings/               Input, physics, graphics, build scene list, etc.
 | `GameProgress.cs` | Remembers the riddle score, the penalty and the start time while you move between scenes. |
 | `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes one computer beep, and moves on to the next one when you switch it off. It waits until the portal starts it. |
 | `ComputerSwitch.cs` | The invisible "press E" box on the beeping computer (created automatically). |
-| `Portal.cs` | Portal you walk into. It either loads the next scene (Classroom → Cad_lab) or teleports you to a point in the same scene and then disappears (one-way, bench room → Lab 1). |
+| `Portal.cs` | Portal you walk into. It either loads the next scene (Classroom → Cad_lab) or teleports you to a point in the same scene and then disappears (one-way, bench room → Lab 1). Draws itself as a glowing vortex in its **Portal Color** (set it to the colour of the place it leads to), with a light and a 3D hum. |
+| `TutorialDirector.cs` | Runs the first level (`Cabin_Tutorial`) with a teaching box that shows one thing at a time: look (mouse icon + 4 arrows), walk (W A S D keys), sprint (SHIFT), R to reset, then a floor ring and on-screen marker to the cupboard, press E, the note, "find the light switch", "step through the portal". The note can be read again with E on the open cupboard. |
+| `PlayerSpawn.cs` | Remembers where the player started. In a scene that has one (the cabins), R puts the player back there; nothing else is reset. |
+| `PlayerCombat.cs` | The player's fighting (fight rooms only): left click = quick swing of the textbook, hold left click = charged heavy swing, hold right click = block, right click just before a hit lands = perfect block (stuns him), Space = dodge. Also draws the textbook in your hand. |
+| `ProfessorAI.cs` | An AI professor you can fight: a hostile hologram (angular, magenta, glitchy: the combat cousin of the calm cyan Keeper) built from shapes, telegraphs every attack, can be stunned, and steps back to make room for a chalk throw if you crowd him. Health bar width and colour are per-opponent (purple, 300 px for the tutorial professor; the boss gets a much wider one). Your attendance starts at 74 with 75 as the maximum. The tutorial professor has only a pointer swing and one chalk throw; the boss will be a separate script with more abilities. |
+| `Chalk.cs` / `Health.cs` / `CombatSfx.cs` | The thrown chalk (dodge it, or perfect-block to send it back), hit points (with a floor so the tutorial professor can't die early), and all fight sounds made in code. |
+| `CombatHUD.cs` / `CombatTutorial.cs` / `TutorialUI.cs` | The fight screen (attendance bar, his health bar, subtitles, popups) and the combat tutorial's lessons (swing, heavy swing, block, perfect block, counter, dodge, then the real fight) in the same corner teaching box as the first tutorial. |
+| `OpenableCupboard.cs` | A cupboard you open with E: the doors swing out and a hidden note appears. |
+| `LightSwitch.cs` / `RoomLights.cs` | The one working rocker on the cabin switch panel, and the ceiling lights it flickers out. When the lights go out the portal opens. |
+| `PortalTransition.cs` | The walk-through sequence: rush in with a wider field of view, a round wipe in the portal colour, the load/teleport happens while the screen is covered, then the wipe opens on the new place. |
+| `RealmStyle.cs` | The flat "realm" look for a section: one fill colour for everything, drawn only by thick outlines (like SCHiM, in 3D). Switched on while the object is enabled and off when its portal is used. Used in `Cad_lab`: the bench room (orange) and Lab 1 (teal, starts when you go through the Lab portal), and in `Classroom` (mustard / dark brown). In a realm the switchboard buttons and the sticky note become plain light plates with dark bold numbers (`ScreenGlow`), so the code stays readable. A realm can start when a portal is used (**Starts When Used**) and hands over cleanly to the next one. |
 | `EndScreen.cs` | The final screen: fade to dark, score and time, Play Again / Quit. |
 | `WorldTextUtil.cs` | Helper that applies the `WorldText` shader to 3D text. |
 
@@ -174,7 +190,11 @@ These add menu items in the Unity Editor. They are not part of the game itself:
 - **Tools → Make Box Colliders For Selected** (`BenchColliderMaker.cs`): replaces a detailed mesh collider with simple box colliders, one per bench.
 - **Tools → Rebuild CAD Lab Colliders** (`CadLabColliders.cs`): rebuilds clean wall, floor and furniture colliders for the CAD lab.
 
-Both tools can be undone with **Ctrl+Z**.
+- **Tools → Cabins → Build Both And Update Build List** (`CabinSceneBuilder.cs`): builds `Cabin_Tutorial` (normal shading) and `Cabin_Combat` (flat realm look) from `Assets/Models/CABINS.fbx` and puts them first in the build list. Safe to re-run: it rebuilds both scenes from scratch. `CABINS.fbx` is exported from `seventhFloor/Rooms/cabin-nearviblab_edited_v7.blend` (local only, not in git).
+- **Tools → Realm Outline → Install** (`RealmOutlineSetup.cs`): adds the realm-look pass to the URP renderers (switched off). Run it once per project.
+- **Tools → Realm Outline → Add To Open Scene**: adds a `RealmStyle` object to the open scene, wired to the renderers and to a portal named `LabPortal`.
+
+The two collider tools can be undone with **Ctrl+Z**.
 
 ### Packages used (from `Packages/manifest.json`)
 Universal RP 17.6.0, Input System 1.20.0, AI Navigation 2.0.14, uGUI 2.6.0, Timeline 6.6.0, Visual Scripting 1.9.12, Test Framework 1.8.0, plus the standard Unity modules.

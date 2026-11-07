@@ -211,8 +211,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -248,7 +248,7 @@ Transform:
   m_GameObject: {fileID: 83776124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.211, y: 0.549, z: 1.044}
+  m_LocalPosition: {x: 7.55, y: 0.55, z: 1.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -338,8 +338,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -375,7 +375,7 @@ Transform:
   m_GameObject: {fileID: 120560073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.283, y: 0.549, z: -0.059}
+  m_LocalPosition: {x: 7.55, y: 0.55, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -395,15 +395,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.686
+      value: 4.48
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.967
+      value: 1.01
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -432,6 +432,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -600,8 +604,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -637,7 +641,7 @@ Transform:
   m_GameObject: {fileID: 274477873}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.686, y: 0.549, z: 0.967}
+  m_LocalPosition: {x: 4.48, y: 0.55, z: 1.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -657,15 +661,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.639
+      value: 4.48
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.11
+      value: -3.15
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -696,6 +700,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
       value: 20
       objectReference: {fileID: 0}
@@ -718,15 +726,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.811
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.006
+      value: -0.03
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -755,6 +763,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -796,8 +808,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -833,7 +845,7 @@ Transform:
   m_GameObject: {fileID: 438320673}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.174, y: 0.549, z: -2.089}
+  m_LocalPosition: {x: 7.55, y: 0.55, z: -2.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -870,8 +882,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -907,7 +919,7 @@ Transform:
   m_GameObject: {fileID: 558923904}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.811, y: 0.549, z: 0.006}
+  m_LocalPosition: {x: 1.35, y: 0.55, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -944,8 +956,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -981,7 +993,7 @@ Transform:
   m_GameObject: {fileID: 563057229}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.098, y: 0.549, z: -1.029}
+  m_LocalPosition: {x: 1.35, y: 0.55, z: -1.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1001,15 +1013,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.7567846
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.9899827
+      value: 1.01
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1038,6 +1050,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -1115,15 +1131,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.211
+      value: 7.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.044
+      value: 1.01
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1154,6 +1170,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
       value: 20
       objectReference: {fileID: 0}
@@ -1176,15 +1196,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.404
+      value: 7.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.186
+      value: -3.15
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1213,6 +1233,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -1254,8 +1278,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -1291,7 +1315,7 @@ Transform:
   m_GameObject: {fileID: 838540768}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.294, y: 0.549, z: -1.029}
+  m_LocalPosition: {x: 7.55, y: 0.55, z: -1.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1341,6 +1365,8 @@ MonoBehaviour:
   correctColor: {r: 0.2, g: 1, b: 0.3, a: 1}
   wrongColor: {r: 1, g: 0.15, b: 0.1, a: 1}
   pushDepth: 0.004
+  flatSwitchColor: {r: 1, g: 0.97, b: 0.86, a: 1}
+  flatInkColor: {r: 0.13, g: 0.07, b: 0.04, a: 1}
 --- !u!4 &886040423
 Transform:
   m_ObjectHideFlags: 0
@@ -1391,6 +1417,7 @@ MonoBehaviour:
   reach: 2.5
   cam: {fileID: 0}
   movement: {fileID: 0}
+  hidePrompt: 0
 --- !u!114 &903167559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1464,15 +1491,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.174
+      value: 7.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.089
+      value: -2.11
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1501,6 +1528,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -1542,8 +1573,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -1579,7 +1610,7 @@ Transform:
   m_GameObject: {fileID: 987597607}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.686, y: 0.549, z: -1.029}
+  m_LocalPosition: {x: 4.48, y: 0.55, z: -1.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1736,15 +1767,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.686
+      value: 4.48
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.038
+      value: -2.11
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1773,6 +1804,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -1928,8 +1963,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -1965,7 +2000,7 @@ Transform:
   m_GameObject: {fileID: 1205914322}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.404, y: 0.549, z: -3.186}
+  m_LocalPosition: {x: 7.55, y: 0.55, z: -3.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2036,8 +2071,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -2073,7 +2108,7 @@ Transform:
   m_GameObject: {fileID: 1256270791}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.639, y: 0.549, z: -3.11}
+  m_LocalPosition: {x: 4.48, y: 0.55, z: -3.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2209,7 +2244,14 @@ MonoBehaviour:
   onUsed:
     m_PersistentCalls:
       m_Calls: []
-  spinSpeed: 0
+  portalColor: {r: 0.949, g: 0.541, b: 0.188, a: 1}
+  accentColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
+  swirlSpeed: 1
+  glowLight: 1
+  hum: 1
+  humVolume: 0.25
+  useTransition: 1
+  armDelay: 0
 --- !u!1001 &1343465415
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2224,15 +2266,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.252
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.121
+      value: -2.11
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2261,6 +2303,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -2302,8 +2348,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -2339,7 +2385,7 @@ Transform:
   m_GameObject: {fileID: 1370215820}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.686, y: 0.549, z: -2.038}
+  m_LocalPosition: {x: 4.48, y: 0.55, z: -2.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2376,8 +2422,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -2413,7 +2459,7 @@ Transform:
   m_GameObject: {fileID: 1370638394}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.7567846, y: 0.549, z: 0.9899827}
+  m_LocalPosition: {x: 1.35, y: 0.55, z: 1.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2450,8 +2496,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -2487,7 +2533,7 @@ Transform:
   m_GameObject: {fileID: 1532694819}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.011, y: 0.549, z: -3.125}
+  m_LocalPosition: {x: 1.35, y: 0.55, z: -3.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2507,15 +2553,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.011
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.125
+      value: -3.15
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2544,6 +2590,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -2568,15 +2618,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.294
+      value: 7.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.029
+      value: -1.07
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2607,6 +2657,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
       value: 20
       objectReference: {fileID: 0}
@@ -2629,15 +2683,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.283
+      value: 7.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.059
+      value: -0.03
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2666,6 +2720,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -2707,8 +2765,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -2744,7 +2802,7 @@ Transform:
   m_GameObject: {fileID: 1648354728}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.252, y: 0.549, z: -2.121}
+  m_LocalPosition: {x: 1.35, y: 0.55, z: -2.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2815,8 +2873,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 0.9
-  m_fontSizeBase: 0.9
+  m_fontSize: 0.6
+  m_fontSizeBase: 0.6
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
@@ -2936,6 +2994,62 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8159355769536994487, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
   m_PrefabInstance: {fileID: 1929329210}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1848545695
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1848545697}
+  - component: {fileID: 1848545696}
+  m_Layer: 0
+  m_Name: RealmStyle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1848545696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848545695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d48e2544ddeeb45a713149f57f594a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RealmStyle
+  fillColor: {r: 0.96, g: 0.72, b: 0.2, a: 1}
+  lineColor: {r: 0.2, g: 0.1, b: 0.05, a: 1}
+  voidColor: {r: 0.2, g: 0.1, b: 0.05, a: 1}
+  lineThickness: 4
+  depthThreshold: 0.04
+  creaseThreshold: 0.5
+  outlineFeatures:
+  - {fileID: 8149790415990666227, guid: 65bc7dbf4170f435aa868c779acfb082, type: 2}
+  - {fileID: 7871390591497979345, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
+  endsWhenUsed: {fileID: 1319513120}
+  startsWhenUsed: {fileID: 0}
+  disablePostProcessing: 1
+--- !u!4 &1848545697
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848545695}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1889468205
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2950,15 +3064,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.098
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.029
+      value: -1.07
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2987,6 +3101,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -3134,15 +3252,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.686
+      value: 4.48
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.061
+      value: -0.03
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3171,6 +3289,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -3212,8 +3334,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SitSpot
   promptText: sit
-  eyeOffset: {x: 0, y: 0.05, z: -0.15}
-  lookDownAngle: 20
+  eyeOffset: {x: 0, y: 0.05, z: -0.02}
+  lookDownAngle: 12
   faceTowards: Chalkboard
   moveTime: 0.6
   lookYawLimit: 70
@@ -3249,7 +3371,7 @@ Transform:
   m_GameObject: {fileID: 2040608967}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.686, y: 0.549, z: -0.061}
+  m_LocalPosition: {x: 4.48, y: 0.55, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3543,7 +3665,7 @@ Transform:
   m_GameObject: {fileID: 2128828206}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.9992162, z: -0, w: -0.039585307}
-  m_LocalPosition: {x: 7.217, y: 0.684, z: -0.466}
+  m_LocalPosition: {x: 7.55, y: 0.684, z: -0.466}
   m_LocalScale: {x: 0.18, y: 0.1, z: 0.005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3563,15 +3685,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.686
+      value: 4.48
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.549
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.029
+      value: -1.07
       objectReference: {fileID: 0}
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3600,6 +3722,10 @@ PrefabInstance:
     - target: {fileID: 3920929821578233851, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
+      propertyPath: eyeOffset.z
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5590890093638669693, guid: 74db500318dd89d489b301f36802857e, type: 3}
       propertyPath: lookDownAngle
@@ -3638,3 +3764,4 @@ SceneRoots:
   - {fileID: 886040423}
   - {fileID: 2128828211}
   - {fileID: 1703503329}
+  - {fileID: 1848545697}
