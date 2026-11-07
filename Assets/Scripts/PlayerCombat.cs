@@ -45,6 +45,14 @@ public class PlayerCombat : MonoBehaviour
     public float Charge01 { get; private set; }
     public bool InputEnabled = true;
     public bool Invulnerable => Time.time < invulnUntil;
+    public float LastDashAt { get; private set; } = -10f;      // when you last dodged (for "DODGED" when something flies past you)
+
+    // Something that was heading for you flew past because you dodged: tell the player
+    public void NoteDodged()
+    {
+        CombatHUD.Popup("DODGED", TutorialUI.Good);
+        Defended?.Invoke(HitResult.Dodged);
+    }
 
     // things the tutorial listens to
     public event Action<ProfessorAI, bool> HitLanded;      // who was hit, was it a heavy swing
@@ -208,6 +216,7 @@ public class PlayerCombat : MonoBehaviour
     {
         dashReadyAt = Time.time + dashCooldown;
         invulnUntil = Time.time + dashInvulnerable;
+        LastDashAt = Time.time;
         float x = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
         float z = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
         Vector3 dir = transform.right * x + transform.forward * z;

@@ -72,9 +72,11 @@ public class BeepingComputerPuzzle : MonoBehaviour
     [Header("What happens when it's switched off")]
     [Tooltip("Hidden at the start, appears when the computer is switched off (e.g. the portal to the next room)")]
     public GameObject portal;
-    public string solvedMessage = "All computers shut down. Something opened...";
+    public string solvedMessage = "All computers fixed. A portal has opened!";
     [Tooltip("Shown after switching one off when more are left. {0} = how many are off, {1} = total")]
-    public string progressMessage = "Computer {0}/{1} shut down... wait, another one is beeping!";
+    public string progressMessage = "Computer {0}/{1} fixed";
+    [Tooltip("ON = fixing the last computer ends the game with the \"Mission Passed\" screen (for now). OFF = the old behaviour: banner, portal and On Solved.")]
+    public bool endWithMissionPassed = true;
     public UnityEvent onSolved;
 
     public bool IsBeeping { get; private set; }
@@ -220,6 +222,8 @@ public class BeepingComputerPuzzle : MonoBehaviour
         started = true;
 
         computersToSwitchOff = Mathf.Max(1, computersCount);
+        GameProgress.computersToSwitchOff = computersToSwitchOff;      // (the objective strip shows "Fix N computers in the lab (done/N)")
+        GameProgress.computersSwitchedOff = 0;
         int options = randomOptions == null ? 0 : randomOptions.Length;
         if (pickRandomly && options < computersToSwitchOff)
             Debug.LogWarning("[BeepingComputer] Need " + computersToSwitchOff + " computers but Random Options only has " + options +
@@ -339,6 +343,7 @@ public class BeepingComputerPuzzle : MonoBehaviour
         if (alarmLabel != null) alarmLabel.gameObject.SetActive(false);
 
         int done = current + 1;
+        GameProgress.computersSwitchedOff = done;
         if (done < alarms.Count)
         {
             // More to go: short silence, then the next one starts beeping somewhere else
@@ -348,8 +353,14 @@ public class BeepingComputerPuzzle : MonoBehaviour
             yield break;
         }
 
-        // All switched off: open the way
+        // All fixed
         GameProgress.computersSwitchedOff = alarms.Count;
+        if (endWithMissionPassed)
+        {
+            MissionPassedScreen.Show();                   // music + screen + Main Menu button (which quits, for now)
+            yield break;
+        }
+        // (old way: open the way on)
         if (player != null) player.ShowBanner(solvedMessage, 4f);
         if (portal != null) portal.SetActive(true);
         onSolved.Invoke();

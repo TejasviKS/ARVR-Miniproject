@@ -2324,35 +2324,35 @@ MonoBehaviour:
   hologramLookOnModel: 1
   hologramColor: {r: 0.2, g: 0.85, b: 1, a: 1}
   introLines:
-  - So... you made it through the switches.
-  - I am Lab Asst. Gemini, keeper of this dimension.
-  - Answer my three riddles. Each mistake will cost you in the next room.
+  - Hi, I'm Lab Asst. Gemini. Welcome to the CAD lab.
+  - Some of the computers in here are faulty, and they need fixing before class.
+  - Answer three questions to proceed. Every wrong answer means more computers to fix.
   riddles:
-  - question: I have keys but open no locks. I have space but no room. You can enter, but you can't go outside.
+  - question: Which type of testing is performed after coding every module?
     options:
-    - A keyboard
-    - A piano
-    - A map
+    - Unit testing
+    - Integration testing
+    - Acceptance testing
     correctIndex: 0
-  - question: The more of me you take, the more you leave behind.
+  - question: Which software development life cycle model uses pair programming?
     options:
-    - Footsteps
-    - Memories
-    - Time
+    - Extreme Programming
+    - Lean
+    - Waterfall
     correctIndex: 0
-  - question: In the classroom, where did you find the hidden code?
+  - question: Which testing technique involves examining the internal code structure without executing the program?
     options:
-    - Under a desk
-    - Inside a cupboard
-    - On the blackboard
+    - Static testing
+    - Dynamic testing
+    - Performance testing
     correctIndex: 0
   correctLine: Correct.
-  wrongLine: Wrong.
-  scoreLine: '{0} out of {1}... {2} will scream for you.'
+  wrongLine: 'Not quite. The answer is: {0}.'
+  scoreLine: '{0} out of {1} correct. You''ll need to fix {2}.'
   outroLines:
-  - The way is open. Step into the light by the door.
-  afterLine: Go. The way is open.
-  computersForScore: 04000000030000000200000001000000i
+  - Head through the portal by the door when you're ready. The faulty computers are in Lab 1.
+  afterLine: The faulty computers are in Lab 1, through the portal by the door.
+  computersForScore: 06000000050000000400000003000000i
   portal: {fileID: 847906905}
   onFinished:
     m_PersistentCalls:
@@ -4839,6 +4839,7 @@ MonoBehaviour:
   hum: 1
   humVolume: 0.25
   useTransition: 1
+  armDelay: 0
 --- !u!1 &876261328
 GameObject:
   m_ObjectHideFlags: 0
@@ -8995,15 +8996,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeepingComputerPuzzle
   startAutomatically: 0
-  computersToSwitchOff: 2
+  computersToSwitchOff: 3
   delayBeforeNext: 2
   pickRandomly: 1
   randomOptions:
-  - defaultMaterial.044
   - defaultMaterial.005
-  - defaultMaterial.385
+  - defaultMaterial.009
+  - defaultMaterial.014
+  - defaultMaterial.015
+  - defaultMaterial.024
+  - defaultMaterial.025
+  - defaultMaterial.034
+  - defaultMaterial.035
+  - defaultMaterial.044
+  - defaultMaterial.045
+  - defaultMaterial.054
+  - defaultMaterial.055
+  - defaultMaterial.064
+  - defaultMaterial.065
+  - defaultMaterial.074
   - defaultMaterial.075
+  - defaultMaterial.084
+  - defaultMaterial.085
+  - defaultMaterial.094
+  - defaultMaterial.095
+  - defaultMaterial.304
+  - defaultMaterial.305
+  - defaultMaterial.314
+  - defaultMaterial.315
+  - defaultMaterial.324
   - defaultMaterial.325
+  - defaultMaterial.334
+  - defaultMaterial.335
+  - defaultMaterial.344
+  - defaultMaterial.345
+  - defaultMaterial.354
+  - defaultMaterial.355
+  - defaultMaterial.364
+  - defaultMaterial.365
+  - defaultMaterial.374
+  - defaultMaterial.375
+  - defaultMaterial.384
+  - defaultMaterial.385
+  - defaultMaterial.394
+  - defaultMaterial.395
   beepingComputerName: defaultMaterial.385
   randomWithinRadius: 0
   monitorNamePrefix: Computer_Low
@@ -9024,8 +9060,8 @@ MonoBehaviour:
   beepVolume: 0.8
   hearingDistance: 25
   portal: {fileID: 0}
-  solvedMessage: Computer shut down. Something opened...
-  progressMessage: Computer {0}/{1} shut down... wait, another one is beeping!
+  solvedMessage: All computers fixed. A portal has opened!
+  progressMessage: Computer {0}/{1} fixed
   onSolved:
     m_PersistentCalls:
       m_Calls:

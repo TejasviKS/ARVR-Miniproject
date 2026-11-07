@@ -9,8 +9,8 @@ public static class GameProgress
     public static bool riddlesDone;          // has the player finished the NPC's riddles?
     public static int riddlesCorrect;        // how many were right
     public static int riddlesTotal;          // how many were asked
-    public static int computersToSwitchOff;  // the penalty chosen by the NPC from the score
-    public static int computersSwitchedOff;  // filled in when the beeping puzzle is solved
+    public static int computersToSwitchOff;  // how many computers must be fixed (decided by the Lab Assistant's quiz score)
+    public static int computersSwitchedOff;  // how many faulty computers have been fixed so far (the objective strip shows it)
     public static float startTime;           // Time.time when the run started (for the end screen)
 
     // Things the player picked up (kept from scene to scene), e.g. "letter_of_recommendation"

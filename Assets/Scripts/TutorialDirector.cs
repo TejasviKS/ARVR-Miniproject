@@ -336,12 +336,20 @@ public class TutorialDirector : MonoBehaviour
     }
 
     // a keyboard key: lit = amber face with dark letter
-    void Key(Rect r, string label, bool lit, float a, GUIStyle style = null)
+    void Key(Rect r, string label, bool lit, float a, GUIStyle style = null, bool grow = true)
     {
+        style = style ?? keyStyle;
+        int oldSize = style.fontSize;
+        if (grow)                                              // bigger key around its centre, with bigger letters
+        {
+            r = new Rect(r.center.x - r.width * TutorialUI.KeyBoost / 2f, r.center.y - r.height * TutorialUI.KeyBoost / 2f, r.width * TutorialUI.KeyBoost, r.height * TutorialUI.KeyBoost);
+            style.fontSize = Mathf.RoundToInt(oldSize * TutorialUI.KeyBoost);
+        }
         Round(r, new Color(0f, 0f, 0f, 0.5f * a), 9f);
         Rect face = new Rect(r.x + 2f, r.y + 2f, r.width - 4f, r.height - 7f);
         Round(face, lit ? new Color(Accent.r, Accent.g, Accent.b, a) : new Color(0.20f, 0.23f, 0.29f, a), 8f);
-        Text(face, label, style ?? keyStyle, lit ? new Color(0.1f, 0.08f, 0.02f, a) : new Color(0.85f, 0.88f, 0.95f, a));
+        Text(face, label, style, lit ? new Color(0.1f, 0.08f, 0.02f, a) : new Color(0.85f, 0.88f, 0.95f, a));
+        style.fontSize = oldSize;
     }
 
     // Rotate whatever is drawn next around a point given in the CURRENT drawing coordinates (GUIUtility.RotateAroundPivot
@@ -396,8 +404,9 @@ public class TutorialDirector : MonoBehaviour
         float a = boxAlpha;
         const float w = 440f, h = 200f;                          // the box is laid out in these units, then scaled as a whole (Box Scale)
         Matrix4x4 savedMatrix = GUI.matrix;
-        Vector3 origin = new Vector3(Screen.width - w * boxScale - 24f, Screen.height - h * boxScale - 24f, 0f);   // bottom right: the spot you walk to is usually low on the left
-        GUI.matrix = savedMatrix * Matrix4x4.TRS(origin, Quaternion.identity, new Vector3(boxScale, boxScale, 1f));
+        float sc = boxScale * TutorialUI.SizeFactor;             // grows with the screen, so full screen is not tiny
+        Vector3 origin = new Vector3(Screen.width - w * sc - 24f, Screen.height - h * sc - 24f, 0f);   // bottom right: the spot you walk to is usually low on the left
+        GUI.matrix = savedMatrix * Matrix4x4.TRS(origin, Quaternion.identity, new Vector3(sc, sc, 1f));
         Rect box = new Rect(0f, 0f, w, h);
         Round(box, new Color(0.03f, 0.05f, 0.08f, 0.9f * a), 12f);
         GUI.color = new Color(Accent.r, Accent.g, Accent.b, a);
@@ -441,12 +450,12 @@ public class TutorialDirector : MonoBehaviour
                 small = "Walk a few steps.";
                 progress = Mathf.Clamp01(stepWalked / walkMetres);
                 Keyboard kb = Keyboard.current;
-                float k = 54f, g = 6f;
+                float k = 62f, g = 6f;                                   // (the WASD keys are laid out big already: no extra growing)
                 Vector2 o = new Vector2(icon.x - (3f * k + 2f * g) / 2f, icon.y - k - g / 2f - 4f);
-                Key(new Rect(o.x + k + g, o.y, k, k), "W", kb != null && kb.wKey.isPressed, a);
-                Key(new Rect(o.x, o.y + k + g, k, k), "A", kb != null && kb.aKey.isPressed, a);
-                Key(new Rect(o.x + k + g, o.y + k + g, k, k), "S", kb != null && kb.sKey.isPressed, a);
-                Key(new Rect(o.x + 2f * (k + g), o.y + k + g, k, k), "D", kb != null && kb.dKey.isPressed, a);
+                Key(new Rect(o.x + k + g, o.y, k, k), "W", kb != null && kb.wKey.isPressed, a, null, false);
+                Key(new Rect(o.x, o.y + k + g, k, k), "A", kb != null && kb.aKey.isPressed, a, null, false);
+                Key(new Rect(o.x + k + g, o.y + k + g, k, k), "S", kb != null && kb.sKey.isPressed, a, null, false);
+                Key(new Rect(o.x + 2f * (k + g), o.y + k + g, k, k), "D", kb != null && kb.dKey.isPressed, a, null, false);
                 break;
             }
             case Step.Sprint:

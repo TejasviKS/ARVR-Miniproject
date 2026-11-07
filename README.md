@@ -1,6 +1,6 @@
 # ARVR Miniproject: Escape-Room Puzzle Game (Unity)
 
-A first-person puzzle game built in Unity. You start in a **Classroom** and solve a light-switch code puzzle to open a portal to the **CAD Lab**. There, a hologram professor asks you three riddles, and your score decides how many beeping computers you must find and switch off before you escape.
+A first-person puzzle game built in Unity. You start in a **Classroom** and solve a light-switch code puzzle to open a portal to the **CAD Lab**. There, Lab Asst. Gemini quizzes you with three Software Engineering questions, and your score decides how many faulty computers you must find and fix before you escape.
 
 Built to show: interaction, spatial (3D) audio, UI, lighting effects, and running on low-end laptops. All sounds are generated in code, so the project has no audio files.
 
@@ -76,8 +76,8 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 | **Mouse** | Look around |
 | **E** | Interact (sit, press switch, talk, switch off computer). A prompt appears under the crosshair. |
 | **Left click** | Press a wall switch (same as **E**, only for the switches) |
-| **E / Space / Left click** | In a conversation: skip the typing, then go to the next line |
-| **1 / 2 / 3** or click | Pick an answer to a riddle |
+| **Space** (or E / Left click) | In a conversation: skip the typing, then go to the next line (the box only says "Press Space to continue") |
+| **1 / 2 / 3** or click | Pick an answer to a question |
 | **R** | Emergency reset in every level: stand up, close a conversation, and put you back at that level's start (facing the same way). Nothing else changes: puzzles, notes, lights and score are kept. In Cad_lab, after the Lab portal, it returns you to Lab 1's arrival point. |
 | **Esc** | Release the mouse cursor (click the Game view to lock it again) |
 
@@ -97,30 +97,27 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 The code is set on the `CodePanel` component in the Classroom scene (currently `3-7-1-9`). The sticky note reads it from there automatically, so if you change it the note updates too.
 </details>
 
-### Level 2: Lab Asst. Gemini's riddles (`Cad_lab.unity`, bench room)
-- You arrive in an empty bench room with a glowing, see-through **hologram professor**, "Lab Asst. Gemini". You can hear his low hum from about 10 m away, and he slowly turns to face you.
-- Walk up to him and press **E** to talk. The text types out with little "voice" blips.
-- He asks **3 riddles**. Each has 3 answers in a different order every time, and you get **one try** per riddle. A right answer flashes green with a chime; a wrong answer flashes red with a buzz.
-- Your score sets the next level's difficulty:
+### Level 4: Lab Asst. Gemini's quiz and the faulty computers (`Cad_lab.unity`)
+- You arrive in an empty bench room with a glowing, see-through **lab assistant**, "Lab Asst. Gemini". You can hear his low hum from about 10 m away, and he slowly turns to face you.
+- Walk up to him and press **E** to talk. The text types out with little "voice" blips. He says hi, explains that some computers are faulty, and asks you to **answer three questions to proceed**.
+- The questions come from the Software Engineering course (testing types, development models ...). Each has 3 answers in a different order every time, and you get **one try** per question. A right answer flashes green with a chime; a wrong answer flashes red with a buzz, and he tells you the right answer.
+- Your score decides how many computers you have to fix in the next room:
 
-  | Riddles right | Computers to switch off |
+  | Questions right | Computers to fix |
   |---|---|
-  | 3 | 1 |
-  | 2 | 2 |
-  | 1 | 3 |
-  | 0 | 4 |
+  | 3 | 3 |
+  | 2 | 4 |
+  | 1 | 5 |
+  | 0 | 6 |
 
-- After the last riddle, a **portal** appears by the door. It's one-way: walk in and you appear in the computer lab. The doorway is a solid wall, so you can't see or walk into the lab before solving, and you can't walk back afterwards.
+- After the last question, a **portal** appears by the door. It's one-way: walk in and you appear in Lab 1.
+- In Lab 1 the objective reads "Fix N computers in the lab (done/N)". One computer is **beeping** (3D sound): follow the sound to get close. Its screen only glitches now and then and shows a small error message, so the audio is the main clue. Look at it and press **E** to fix it; then the next one starts beeping somewhere else. The computers are picked at random (from the 40 in Lab 1) each time you play.
+- If you play `Cad_lab` directly without the quiz (for testing), it uses 3 computers.
+- The questions and every line he says are plain fields on the Keeper object in `Cad_lab.unity` (`RiddleNPC`), so they are easy to change.
 
-### Level 3: The beeping computers (`Cad_lab.unity`, Lab 1)
-- Going through the portal starts the puzzle. One computer is **beeping** (3D sound), and its screen glitches now and then and shows a small error message.
-- Follow the sound, look at the computer and press **E** to switch it off. Then the next one starts beeping somewhere else.
-- Switch off as many as your riddle score decided. The computers are picked at random each time you play.
-- If you play `Cad_lab` directly without the riddles (for testing), it uses 2 computers.
-
-### The end
-- When the last computer shuts down, the screen fades to dark and shows **"You escaped the multiverse!"** with your riddle score, the number of computers switched off, and your time.
-- **Play Again** restarts from the Classroom. **Quit** closes the game (or stops Play mode in the editor).
+### The end (for now)
+- When the last computer is fixed, a **Mission Passed!** screen appears with the mission-passed music, and a **Main Menu** button fades in. It quits the game (or stops Play mode in the editor) until the real main menu, the boss fight and the credits are made.
+- The older "You escaped the multiverse!" end screen (`EndScreen.cs`) is still in the project but the puzzle no longer shows it (see the puzzle's `End With Mission Passed` setting).
 
 ---
 
@@ -130,7 +127,7 @@ The code is set on the `CodePanel` component in the Classroom scene (currently `
 Assets/
 ├── Scenes/
 │   ├── Classroom.unity        Level 1: switch-code puzzle
-│   ├── Cad_lab.unity          Levels 2 and 3: riddle NPC + beeping-computer puzzle
+│   ├── Cad_lab.unity          Level 4: Lab Asst. Gemini's quiz + fix-the-computers puzzle
 │   └── SampleScene.unity      Unity's default scene (not used, disabled in the build list)
 ├── Models/
 │   ├── CLASSROOM.fbx          Classroom 3D model (~15 MB, Git LFS)
@@ -167,14 +164,15 @@ ProjectSettings/               Input, physics, graphics, build scene list, etc.
 | `CodePanel.cs` | Classroom switchboard puzzle: finds the wall switches, numbers them, and checks the code you enter. |
 | `PanelSwitch.cs` | A single wall switch (added automatically by `CodePanel` when the game starts). |
 | `CodeNote.cs` | The sticky note under the desk that shows the code. |
-| `RiddleNPC.cs` | The hologram professor: builds his body from simple shapes, adds his light and 3D sounds, runs the dialogue and riddles, and saves the score. |
-| `GameProgress.cs` | Remembers the riddle score, the penalty and the start time while you move between scenes. |
+| `RiddleNPC.cs` | Lab Asst. Gemini: builds his hologram body from simple shapes, adds his light and 3D sounds, runs the dialogue and the quiz, and saves the score. |
+| `GameProgress.cs` | Remembers the quiz score, how many computers to fix and the start time while you move between scenes. |
 | `Portal.cs` / `PortalTransition.cs` | A portal's vortex fades in over 50 ms when it opens, and stepping into it just teleports you (no animation). A portal to another scene starts loading that scene in the background about a second after it opens, so stepping in only has to switch to it. A portal that opens on top of you waits until you step out and back in; there is no arm delay. (`Resources/PortalWipe.shader` is no longer used.) |
+| `MissionPassedScreen.cs` | The ending screen (for now): when the last computer in Lab 1 is fixed, the "mission passed" music plays (`Assets/Resources/Audio/mission_passed.mp3`, a ripped game sound: remove before publishing), the picture dims and a gold "Mission Passed!" in the Pricedown font fades in with "Attendance 75%" under it. After a moment a rounded **Main Menu** button fades in (click or Enter); for now it quits the game. The old end screen (`EndScreen.cs`) is bypassed by the puzzle's `End With Mission Passed` setting. |
 | `WastedScreen.cs` | The defeat screen: slow motion, the picture turns black and white with dark corners, a big red "Attendance 0%" in the classic Pricedown font (`Assets/Resources/Fonts/PricedownBl.otf`, free for personal use only), the "wasted" sound (`Assets/Resources/Audio/wasted.mp3`, a ripped game sound) and a small rounded Try Again button (click or Enter). Fine for this course project; remove the sound before ever publishing. The combat tutorial restarts the fight only after you press it; later fights can use `WastedScreen.Show(...)` too. |
 | `ObjectiveHUD.cs` | The level objective in the top left strip ("▶ Find a way out of this classroom"), the same strip the cabins use for "Find the light switch". The cabins give step-by-step instructions; later levels get abstract objectives, listed at the top of the script (Cad_lab has two stages and moves on when you go through the Lab portal). It creates itself when a scene loads. |
 | `PickupItem.cs` | Something you can pick up with E (used for the **Letter of Recommendation** hidden on a windowsill in the Classroom). Saves the item in `GameProgress` (`HasItem("letter_of_recommendation")`) so later levels can use it. |
-| `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes one computer beep, and moves on to the next one when you switch it off. It waits until the portal starts it. |
-| `ComputerSwitch.cs` | The invisible "press E" box on the beeping computer (created automatically). |
+| `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes ONE computer beep (3D sound, subtle glitching screen) and moves on to the next one when you fix it with E. The computers are chosen at random from the list of Lab 1 monitors. It waits until the portal starts it. |
+| `ComputerSwitch.cs` | The invisible "press E to fix" box on a faulty computer (created automatically). |
 | `Portal.cs` | Portal you walk into. It either loads the next scene (Classroom → Cad_lab) or teleports you to a point in the same scene and then disappears (one-way, bench room → Lab 1). Draws itself as a glowing vortex in its **Portal Color** (set it to the colour of the place it leads to), with a light and a 3D hum. |
 | `TutorialDirector.cs` | Runs the first level (`Cabin_Tutorial`) with a teaching box that shows one thing at a time: look (mouse icon + 4 arrows), walk (W A S D keys), sprint (SHIFT), R to reset, then a floor ring and on-screen marker to the cupboard, press E, the note, "find the light switch", "step through the portal". The note can be read again with E on the open cupboard. |
 | `PlayerSpawn.cs` | Remembers where the player started. In a scene that has one (the cabins), R puts the player back there; nothing else is reset. |
@@ -216,7 +214,7 @@ Universal RP 17.6.0, Input System 1.20.0, AI Navigation 2.0.14, uGUI 2.6.0, Time
 | The scene is empty when the project opens | Unity opened a blank scene. Double-click `Assets/Scenes/Classroom.unity`. |
 | "Portal can't find scene …" | Add `Cad_lab` to **File → Build Profiles → Scene List**. |
 | "Portal is not set up: its Teleport To slot is empty" | In Cad_lab, select **LabPortal** and drag **LabArrival** into its **Teleport To** slot. |
-| Can't walk into the portal in the bench room | Finish the Keeper's riddles first: the portal only appears after the last riddle. |
+| Can't walk into the portal in the bench room | Finish Lab Asst. Gemini's three questions first: the portal only appears after the last one. |
 | The Keeper or the portal looks pink | The shader didn't load. Check that `Hologram.shader` is in `Assets/Resources/`. |
 | Mouse doesn't move the camera | Click inside the Game view. **Esc** releases the cursor. |
 | Stuck in a seat or the camera is tilted | Press **R**. |

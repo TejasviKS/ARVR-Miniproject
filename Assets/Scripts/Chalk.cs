@@ -18,7 +18,8 @@ public class Chalk : MonoBehaviour
     float speed, damage, life = 4f;
     ProfessorAI owner;
     PlayerCombat target;
-    bool reflected, passedPlayer;
+    bool reflected, passedPlayer, dodgeCounted;
+    float closest = float.MaxValue;
 
     public static Chalk Spawn(Vector3 position, Vector3 direction, float speed, float damage, ProfessorAI owner, PlayerCombat target)
     {
@@ -66,7 +67,15 @@ public class Chalk : MonoBehaviour
         {
             if (target == null) return;
             Vector3 chest = target.transform.position + Vector3.up * 1.2f;
-            bool near = (chest - transform.position).magnitude < 0.6f;
+            float dist = (chest - transform.position).magnitude;
+            // it came close and is now moving away, and you dodged just before: that was a dodge (even if it never touched you)
+            if (dist < closest) closest = dist;
+            else if (!dodgeCounted && closest < 2.5f && dist > closest + 0.2f)
+            {
+                dodgeCounted = true;
+                if (!passedPlayer && Time.time - target.LastDashAt < 1.0f) target.NoteDodged();
+            }
+            bool near = dist < 0.6f;
             if (!near) { passedPlayer = false; return; }
             if (passedPlayer) return;                           // already dodged this one: let it fly through
             PlayerCombat.HitResult result = target.ReceiveHit(damage, owner != null ? owner.transform.position : transform.position);
@@ -84,6 +93,7 @@ public class Chalk : MonoBehaviour
                     break;
                 case PlayerCombat.HitResult.Dodged:
                     passedPlayer = true;
+                    dodgeCounted = true;
                     break;
                 default:
                     Hit();

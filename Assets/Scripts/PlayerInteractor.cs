@@ -38,7 +38,7 @@ public class PlayerInteractor : MonoBehaviour
     {
         var kb = Keyboard.current;
         if (kb == null || cam == null) return;
-        if (WastedScreen.IsShowing) { Focused = null; return; }       // the defeat screen is up: nothing else may react (or re-enable walking)
+        if (WastedScreen.IsShowing || MissionPassedScreen.IsShowing) { Focused = null; return; }       // the defeat screen is up: nothing else may react (or re-enable walking)
 
         // EMERGENCY RESET: press R if anything gets stuck (instantly stand up, walking back on).
         // In scenes that have a PlayerSpawn (the cabins) it also puts you back where you started.
@@ -156,16 +156,18 @@ public class PlayerInteractor : MonoBehaviour
         TutorialUI.Ensure();
         float left = messageUntil - Time.time;
         float a = Mathf.Clamp01(left / 0.35f);
-        float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.3f) * 0.9f;
-        const float w = 440f, h = 64f;
+        float scale = TutorialUI.SizeFactor * 0.8f;               // grows with the screen, so full screen is not tiny
+        const float w = 480f;
+        GUIStyle st = TutorialUI.BodyStyle;
+        int oldSize = st.fontSize; TextAnchor oldAnchor = st.alignment;
+        st.fontSize = 24; st.alignment = TextAnchor.MiddleCenter;
+        float h = Mathf.Max(70f, st.CalcHeight(new GUIContent(message), w - 36f) + 28f);       // taller if the message wraps
         Matrix4x4 saved = GUI.matrix;
-        GUI.matrix = saved * Matrix4x4.TRS(new Vector3(Screen.width / 2f - w * scale / 2f, Screen.height - h * scale - 40f, 0f), Quaternion.identity, new Vector3(scale, scale, 1f));
+        GUI.matrix = saved * Matrix4x4.TRS(new Vector3(Screen.width / 2f - w * scale / 2f, Screen.height - h * scale - 48f, 0f), Quaternion.identity, new Vector3(scale, scale, 1f));
         Rect box = new Rect(0f, 0f, w, h);
         TutorialUI.Panel(box, a);
-        GUIStyle st = TutorialUI.BodyStyle;
-        TextAnchor oldAnchor = st.alignment; st.alignment = TextAnchor.MiddleCenter;
-        TutorialUI.Text(new Rect(box.x + 12f, box.y + 6f, box.width - 24f, box.height - 8f), message, st, new Color(1f, 1f, 1f, a));
-        st.alignment = oldAnchor;
+        TutorialUI.Text(new Rect(box.x + 18f, box.y + 8f, box.width - 36f, box.height - 12f), message, st, new Color(1f, 1f, 1f, a));
+        st.fontSize = oldSize; st.alignment = oldAnchor;
         GUI.matrix = saved;
         GUI.color = Color.white;
     }
@@ -180,7 +182,7 @@ public class PlayerInteractor : MonoBehaviour
             messageStyle = new GUIStyle(promptStyle) { fontSize = 32 };
         }
 
-        if (WastedScreen.IsShowing) return;
+        if (WastedScreen.IsShowing || MissionPassedScreen.IsShowing) return;
         float cx = Screen.width / 2f, cy = Screen.height / 2f;
 
         // Crosshair dot (bigger + yellow when looking at something usable)
@@ -197,7 +199,7 @@ public class PlayerInteractor : MonoBehaviour
             ShadowLabel(new Rect(0, cy + 30, Screen.width, 40), Focused.GetPrompt(), promptStyle);
 
         if (!string.IsNullOrEmpty(banner) && Time.time < bannerUntil)
-            ShadowLabel(new Rect(0, 60, Screen.width, 50), banner, messageStyle);
+            ShadowLabel(new Rect(0, 14, Screen.width, 50), banner, messageStyle);
 
         if (!string.IsNullOrEmpty(message) && Time.time < messageUntil) DrawInfoBox();
     }

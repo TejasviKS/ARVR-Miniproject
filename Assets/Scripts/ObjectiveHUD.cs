@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,15 +14,17 @@ using UnityEngine.SceneManagement;
 public class ObjectiveHUD : MonoBehaviour
 {
     // scene name -> the objective for each stage of that level. Edit the texts here.
-    static readonly Dictionary<string, string[]> Objectives = new Dictionary<string, string[]>
+    // (a text can also be worked out when it is shown: the Cad_lab one counts the computers you have fixed)
+    static readonly Dictionary<string, Func<string>[]> Objectives = new Dictionary<string, Func<string>[]>
     {
-        { "Classroom",      new[] { "Find a way out of this classroom" } },
-        { "Cad_lab",        new[] { "Earn your passage", "Silence the lab" } },
-        { "Classroom_boss", new[] { "Survive your final lecture" } },
+        { "Classroom",      new Func<string>[] { () => "Find a way out of this classroom" } },
+        { "Cad_lab",        new Func<string>[] { () => "Answer the Lab Assistant's questions",
+                                                 () => "Fix " + GameProgress.computersToSwitchOff + " computers in the lab (" + GameProgress.computersSwitchedOff + "/" + GameProgress.computersToSwitchOff + ")" } },
+        { "Classroom_boss", new Func<string>[] { () => "Survive your final lecture" } },
     };
 
     static ObjectiveHUD instance;
-    string[] stages;
+    Func<string>[] stages;
     int stage;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -39,7 +42,7 @@ public class ObjectiveHUD : MonoBehaviour
     static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (instance != null) { Destroy(instance.gameObject); instance = null; }
-        if (!Objectives.TryGetValue(scene.name, out string[] texts)) return;
+        if (!Objectives.TryGetValue(scene.name, out Func<string>[] texts)) return;
         var go = new GameObject("ObjectiveHUD");
         instance = go.AddComponent<ObjectiveHUD>();
         instance.stages = texts;
@@ -56,6 +59,6 @@ public class ObjectiveHUD : MonoBehaviour
     void OnGUI()
     {
         if (stages == null || stages.Length == 0) return;
-        TutorialUI.ObjectiveStrip(stages[stage]);
+        TutorialUI.ObjectiveStrip(stages[stage]());
     }
 }

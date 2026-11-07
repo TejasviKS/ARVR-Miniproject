@@ -103,7 +103,7 @@ public class WastedScreen : MonoBehaviour
     }
 
     // ------------------------------------------------------------------ drawing
-    static Font PickFont()
+    public static Font PickFont()
     {
         if (font != null) return font;
         font = Resources.Load<Font>("Fonts/PricedownBl");          // the classic font (Assets/Resources/Fonts), if it is in the project
@@ -116,7 +116,7 @@ public class WastedScreen : MonoBehaviour
     }
 
     // IMGUI also gives text a "hover" colour (white) when the mouse is over it: make every state the same colour
-    static void Pin(GUIStyle s, Color c)
+    public static void Pin(GUIStyle s, Color c)
     {
         s.normal.textColor = c; s.hover.textColor = c; s.active.textColor = c; s.focused.textColor = c;
         s.onNormal.textColor = c; s.onHover.textColor = c; s.onActive.textColor = c; s.onFocused.textColor = c;

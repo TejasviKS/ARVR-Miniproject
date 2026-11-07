@@ -4,15 +4,18 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 // VERSION 1
-// The hologram professor in the CAD lab bench room. Put this on an EMPTY object standing on the floor.
+// The lab assistant (Lab Asst. Gemini) in the CAD lab bench room: he quizzes you before you may go on.
+// (The class keeps its old name, RiddleNPC, so the scene keeps working; "riddles" are now course questions.)
+// Put this on an EMPTY object standing on the floor.
 //
 // When the game starts it:
 //  1. builds a glowing hologram body from simple shapes (or uses your own Model if you set one),
 //  2. adds a flickering cyan light and a low 3D hum you can hear from ~10 m,
 //  3. hides the Portal (the way into Lab 1) until the riddles are done.
 // Press E on him -> dialogue box at the bottom of the screen:
-//   intro lines -> 3 riddles (ONE try each, options shuffled) -> score + penalty -> portal appears.
-// The score decides how many beeping computers the player must switch off next (saved in GameProgress).
+//   intro lines -> 3 questions (ONE try each, options shuffled) -> score -> portal appears.
+// The score decides how many faulty computers the player must fix next (3 if all are right, up to 6 if all are wrong;
+// saved in GameProgress).
 // R (emergency reset) closes the dialogue at any moment; talking again continues where you left off.
 
 [System.Serializable]
@@ -43,30 +46,31 @@ public class RiddleNPC : Interactable
     [TextArea(1, 3)]
     public string[] introLines =
     {
-        "So... you made it through the switches.",
-        "I am Lab Asst. Gemini, keeper of this dimension.",
-        "Answer my three riddles. Each mistake will cost you in the next room.",
+        "Hi, I'm Lab Asst. Gemini. Welcome to the CAD lab.",
+        "Some of the computers in here are faulty, and they need fixing before class.",
+        "Answer three questions to proceed. Every wrong answer means more computers to fix.",
     };
     public Riddle[] riddles =
     {
-        new Riddle("I have keys but open no locks. I have space but no room. You can enter, but you can't go outside.",
-                   new[] { "A keyboard", "A piano", "A map" }, 0),
-        new Riddle("The more of me you take, the more you leave behind.",
-                   new[] { "Footsteps", "Memories", "Time" }, 0),
-        new Riddle("In the classroom, where did you find the hidden code?",
-                   new[] { "Under a desk", "Inside a cupboard", "On the blackboard" }, 0),
+        new Riddle("Which type of testing is performed after coding every module?",
+                   new[] { "Unit testing", "Integration testing", "Acceptance testing" }, 0),
+        new Riddle("Which software development life cycle model uses pair programming?",
+                   new[] { "Extreme Programming", "Lean", "Waterfall" }, 0),
+        new Riddle("Which testing technique involves examining the internal code structure without executing the program?",
+                   new[] { "Static testing", "Dynamic testing", "Performance testing" }, 0),
     };
     public string correctLine = "Correct.";
-    public string wrongLine = "Wrong.";
-    [Tooltip("{0} = how many right, {1} = how many riddles, {2} = e.g. \"two machines\"")]
-    [TextArea(1, 3)] public string scoreLine = "{0} out of {1}... {2} will scream for you.";
-    [TextArea(1, 3)] public string[] outroLines = { "The way is open. Step into the light by the door." };
+    [Tooltip("{0} = the right answer")]
+    public string wrongLine = "Not quite. The answer is: {0}.";
+    [Tooltip("{0} = how many right, {1} = how many questions, {2} = e.g. \"3 computers\"")]
+    [TextArea(1, 3)] public string scoreLine = "{0} out of {1} correct. You'll need to fix {2}.";
+    [TextArea(1, 3)] public string[] outroLines = { "Head through the portal by the door when you're ready. The faulty computers are in Lab 1." };
     [Tooltip("Said when you talk to him again after finishing")]
-    public string afterLine = "Go. The way is open.";
+    public string afterLine = "The faulty computers are in Lab 1, through the portal by the door.";
 
-    [Header("Penalty: computers to switch off for each score")]
-    [Tooltip("Element 0 = 0 right, Element 1 = 1 right, Element 2 = 2 right, Element 3 = 3 right")]
-    public int[] computersForScore = { 4, 3, 2, 1 };
+    [Header("Computers to fix for each score")]
+    [Tooltip("Element 0 = 0 right, Element 1 = 1 right, Element 2 = 2 right, Element 3 = 3 right. At least 3, at most 6.")]
+    public int[] computersForScore = { 6, 5, 4, 3 };
 
     [Header("When the riddles are done")]
     [Tooltip("Hidden at the start, appears when the riddles are finished (the portal by the door)")]
@@ -117,7 +121,7 @@ public class RiddleNPC : Interactable
         Debug.Log("[Scripts] RiddleNPC v1 running on \"" + name + "\"", this);
 
         if (portal != null) portal.SetActive(false);
-        else Debug.LogWarning("RiddleNPC: Portal is not set, so nothing will open after the riddles. Drag the portal into the Portal slot.", this);
+        else Debug.LogWarning("RiddleNPC: Portal is not set, so nothing will open after the questions. Drag the portal into the Portal slot.", this);
 
         for (int i = 0; i < riddles.Length; i++)
         {
@@ -211,14 +215,14 @@ public class RiddleNPC : Interactable
         while (riddleIndex < riddles.Length)
         {
             Riddle r = riddles[riddleIndex];
-            yield return Say("Riddle " + (riddleIndex + 1) + " of " + riddles.Length + ":\n" + r.question, false);
+            yield return Say("Question " + (riddleIndex + 1) + " of " + riddles.Length + ":\n" + r.question, false);
             yield return Choose(r);
 
             bool right = order[chosen] == r.correctIndex;
             if (right) correctCount++;
             riddleIndex++;                        // one attempt only: right or wrong, move on
             React(right);
-            yield return Say(right ? correctLine : wrongLine);
+            yield return Say(right ? correctLine : string.Format(wrongLine, r.options[r.correctIndex]));
         }
 
         yield return Say(ScoreText());
@@ -296,7 +300,7 @@ public class RiddleNPC : Interactable
         }
         if (player != null) player.ShowBanner("A portal has opened by the door!", 3f);
         onFinished.Invoke();
-        Debug.Log("[RiddleNPC] Finished: " + correctCount + "/" + riddles.Length + " right -> " + GameProgress.computersToSwitchOff + " computers to switch off.", this);
+        Debug.Log("[RiddleNPC] Finished: " + correctCount + "/" + riddles.Length + " right -> " + GameProgress.computersToSwitchOff + " computers to fix.", this);
     }
 
     void Close()
@@ -309,15 +313,14 @@ public class RiddleNPC : Interactable
 
     int ComputersForScore()
     {
-        if (computersForScore == null || computersForScore.Length == 0) return 2;
-        return Mathf.Max(1, computersForScore[Mathf.Clamp(correctCount, 0, computersForScore.Length - 1)]);
+        if (computersForScore == null || computersForScore.Length == 0) return 3;
+        return Mathf.Clamp(computersForScore[Mathf.Clamp(correctCount, 0, computersForScore.Length - 1)], 3, 6);
     }
 
     string ScoreText()
     {
         int n = ComputersForScore();
-        string line = string.Format(scoreLine, NumberWord(correctCount), NumberWord(riddles.Length),
-                                    NumberWord(n) + (n == 1 ? " machine" : " machines"));
+        string line = string.Format(scoreLine, correctCount, riddles.Length, n + (n == 1 ? " computer" : " computers"));
         return char.ToUpper(line[0]) + line.Substring(1);
     }
 
@@ -405,8 +408,13 @@ public class RiddleNPC : Interactable
             buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 20, wordWrap = true };
         }
 
-        float w = Mathf.Min(900f, Screen.width - 40f), h = 240f;
-        float x = (Screen.width - w) / 2f, y = Screen.height - h - 20f;
+        // laid out in a 'virtual' screen that is scaled up with the real one, so it is not tiny in full screen
+        float S = TutorialUI.SizeFactor * 0.9f;
+        float sw = Screen.width / S, sh = Screen.height / S;
+        Matrix4x4 savedMatrix = GUI.matrix;
+        GUI.matrix = Matrix4x4.Scale(new Vector3(S, S, 1f));
+        float w = Mathf.Min(900f, sw - 40f), h = 240f;
+        float x = (sw - w) / 2f, y = sh - h - 20f;
 
         // Dark panel with a coloured line on top
         GUI.color = new Color(0.02f, 0.05f, 0.1f, 0.85f);
@@ -430,8 +438,9 @@ public class RiddleNPC : Interactable
         }
         else if (mode == Mode.WaitingForContinue)
         {
-            GUI.Label(new Rect(x + 20f, y + h - 34f, w - 40f, 24f), "Press E / Space / Click to continue", hintStyle);
+            GUI.Label(new Rect(x + 20f, y + h - 34f, w - 40f, 24f), "Press Space to continue", hintStyle);
         }
+        GUI.matrix = savedMatrix;
     }
 
     // ================= Building the hologram =================

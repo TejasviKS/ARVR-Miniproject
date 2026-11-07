@@ -62,11 +62,11 @@ public class EndScreen : MonoBehaviour
         GUI.Label(new Rect(0, cy - 170, Screen.width, 60), title, titleStyle);
 
         string riddles = GameProgress.riddlesDone
-            ? "Riddles: " + GameProgress.riddlesCorrect + "/" + GameProgress.riddlesTotal
-            : "Riddles: skipped";
+            ? "Quiz: " + GameProgress.riddlesCorrect + "/" + GameProgress.riddlesTotal
+            : "Quiz: skipped";
         int minutes = (int)(timeTaken / 60f), seconds = (int)(timeTaken % 60f);
         GUI.Label(new Rect(0, cy - 90, Screen.width, 36), riddles, textStyle);
-        GUI.Label(new Rect(0, cy - 54, Screen.width, 36), "Computers switched off: " + GameProgress.computersSwitchedOff, textStyle);
+        GUI.Label(new Rect(0, cy - 54, Screen.width, 36), "Computers fixed: " + GameProgress.computersSwitchedOff, textStyle);
         GUI.Label(new Rect(0, cy - 18, Screen.width, 36), "Time: " + minutes + ":" + seconds.ToString("00"), textStyle);
 
         if (a < 1f) { GUI.color = Color.white; return; }   // buttons work once the fade is done

@@ -63,10 +63,10 @@ public class CombatHUD : MonoBehaviour
 
     void MakeStyles()
     {
-        labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+        labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
         smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
         popStyle = new GUIStyle(GUI.skin.label) { fontSize = 36, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-        subStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true };
+        subStyle = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true };
         bigStyle = new GUIStyle(GUI.skin.label) { fontSize = 48, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
     }
 
@@ -109,15 +109,22 @@ public class CombatHUD : MonoBehaviour
             Bar(r, shownPlayer, Color.Lerp(new Color(0.9f, 0.25f, 0.2f), new Color(0.4f, 0.9f, 0.5f), player.Health.Fraction), new Color(0f, 0f, 0f, 0.55f));
         }
 
+        // the opponent's bar + name and what he says are drawn in a 'virtual' screen that is scaled up with the real one (S),
+        // so they are not tiny in full screen
+        float S = TutorialUI.SizeFactor * 1.05f;
+        float sw = Screen.width / S;
+        Matrix4x4 savedMatrix = GUI.matrix;
+        GUI.matrix = Matrix4x4.Scale(new Vector3(S, S, 1f));
+
         // the professor
         TutorialUI.ObjectiveAvoid = Rect.zero;                  // (nothing in the way, unless his bar is drawn below)
         if (enemy != null && !enemy.Health.Dead)
         {
             shownEnemy = Mathf.MoveTowards(shownEnemy, enemy.Health.Fraction, dt * 1.5f);
-            float w = Mathf.Min(enemy.healthBarWidth, Screen.width - 60f);
-            Rect r = new Rect(Screen.width / 2f - w / 2f, 40f, w, 14f);
-            TutorialUI.ObjectiveAvoid = new Rect(r.x - 3f, r.y - 28f, w + 6f, 28f + r.height + 24f);      // the objective strip keeps out of this (it drops below a wide bar)
-            Text(new Rect(r.x, r.y - 26f, w, 24f), enemy.displayName.ToUpper(), labelStyle, Color.Lerp(enemy.healthBarColour, Color.white, 0.75f));
+            float w = Mathf.Min(enemy.healthBarWidth, sw - 60f);
+            Rect r = new Rect(sw / 2f - w / 2f, 40f, w, 14f);
+            TutorialUI.ObjectiveAvoid = new Rect((r.x - 3f) * S, (r.y - 33f) * S, (w + 6f) * S, (33f + r.height + 24f) * S);      // (screen pixels) the objective strip keeps out of this (it drops below a wide bar)
+            Text(new Rect(r.x, r.y - 31f, w, 28f), enemy.displayName.ToUpper(), labelStyle, Color.Lerp(enemy.healthBarColour, Color.white, 0.75f));
             TutorialUI.Round(new Rect(r.x - 3f, r.y - 3f, r.width + 6f, r.height + 6f), new Color(0.05f, 0.02f, 0.1f, 0.85f), r.height / 2f + 3f);   // dark frame so it stands out on any room colour
             Bar(r, shownEnemy, enemy.IsStunned ? new Color(1f, 0.9f, 0.3f) : enemy.healthBarColour, new Color(0.12f, 0.06f, 0.2f, 0.95f));
             if (enemy.IsStunned) Text(new Rect(r.x, r.yMax + 2f, w, 22f), "STUNNED: DOUBLE DAMAGE", smallStyle, new Color(1f, 0.9f, 0.3f));
@@ -126,10 +133,11 @@ public class CombatHUD : MonoBehaviour
         // what he says
         if (Time.time < subtitleUntil)
         {
-            float w = Mathf.Min(760f, Screen.width - 80f);
+            float w = Mathf.Min(820f, sw - 80f);
             float a = Mathf.Clamp01((subtitleUntil - Time.time) / 0.4f);
-            Rect r = new Rect(Screen.width / 2f - w / 2f, 92f, w, 40f);
-            Rect strip = TutorialUI.ObjectiveRect;                                   // never on top of the objective strip: sit just below it
+            Rect r = new Rect(sw / 2f - w / 2f, 96f, w, 48f);
+            Rect s0 = TutorialUI.ObjectiveRect;                                      // never on top of the objective strip: sit just below it
+            Rect strip = new Rect(s0.x / S, s0.y / S, s0.width / S, s0.height / S);   // (strip is in screen pixels; this is in scaled units)
             if (strip.width > 0f && r.xMin < strip.xMax + 10f && r.yMax > strip.yMin - 4f && r.yMin < strip.yMax + 4f) r.y = strip.yMax + 8f;
             GUI.color = new Color(0f, 0f, 0f, 0.45f * a);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
@@ -147,6 +155,8 @@ public class CombatHUD : MonoBehaviour
             subStyle.normal.textColor = new Color(1f, 1f, 1f, a);
             GUI.Label(r, rich, subStyle);
         }
+
+        GUI.matrix = savedMatrix;
 
         // popups rise and fade
         for (int i = pops.Count - 1; i >= 0; i--)

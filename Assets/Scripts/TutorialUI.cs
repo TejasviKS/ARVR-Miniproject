@@ -8,6 +8,11 @@ public static class TutorialUI
 {
     public const float BoxW = 440f, BoxH = 200f;
 
+    // Everything in these boxes is laid out in fixed units and scaled as a whole. This grows it with the screen height
+    // (so full screen is not tiny) and gives it a general boost; windows shorter than 800 px keep the old size times the boost.
+    public const float KeyBoost = 1.25f;                      // the key / mouse icons are drawn this much bigger
+    public static float SizeFactor => Mathf.Clamp(Screen.height / 800f, 1f, 2f) * 1.2f;
+
     public static readonly Color Accent = new Color(1f, 0.78f, 0.3f);
     public static readonly Color Dim = new Color(0.45f, 0.48f, 0.55f);
     public static readonly Color Good = new Color(0.4f, 0.9f, 0.5f);
@@ -47,6 +52,7 @@ public static class TutorialUI
     // Starts drawing in box coordinates (0..440 x 0..200), bottom right of the screen, scaled. Call End with what Begin gave back.
     public static Rect Begin(float scale, out Matrix4x4 saved)
     {
+        scale *= SizeFactor;
         saved = GUI.matrix;
         Vector3 origin = new Vector3(Screen.width - BoxW * scale - 24f, Screen.height - BoxH * scale - 24f, 0f);
         GUI.matrix = saved * Matrix4x4.TRS(origin, Quaternion.identity, new Vector3(scale, scale, 1f));
@@ -138,12 +144,20 @@ public static class TutorialUI
         GUI.Label(r, text, style);
     }
 
-    public static void Key(Rect r, string label, bool lit, float a, GUIStyle style = null)
+    public static void Key(Rect r, string label, bool lit, float a, GUIStyle style = null, bool grow = true)
     {
+        style = style ?? KeyStyle;
+        int oldSize = style.fontSize;
+        if (grow)                                              // draw the key bigger around its centre, with bigger letters
+        {
+            r = new Rect(r.center.x - r.width * KeyBoost / 2f, r.center.y - r.height * KeyBoost / 2f, r.width * KeyBoost, r.height * KeyBoost);
+            style.fontSize = Mathf.RoundToInt(oldSize * KeyBoost);
+        }
         Round(r, new Color(0f, 0f, 0f, 0.5f * a), 9f);
         Rect face = new Rect(r.x + 2f, r.y + 2f, r.width - 4f, r.height - 7f);
         Round(face, lit ? new Color(Accent.r, Accent.g, Accent.b, a) : new Color(0.20f, 0.23f, 0.29f, a), 8f);
-        Text(face, label, style ?? KeyStyle, lit ? new Color(0.1f, 0.08f, 0.02f, a) : new Color(0.85f, 0.88f, 0.95f, a));
+        Text(face, label, style, lit ? new Color(0.1f, 0.08f, 0.02f, a) : new Color(0.85f, 0.88f, 0.95f, a));
+        style.fontSize = oldSize;
     }
 
     // Rotate what is drawn next around a point given in the CURRENT drawing coordinates
