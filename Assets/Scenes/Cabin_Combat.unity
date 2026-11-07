@@ -163,7 +163,7 @@ MonoBehaviour:
   hum: 1
   humVolume: 0.25
   useTransition: 1
-  armDelay: 2.5
+  armDelay: 0
 --- !u!23 &153369330
 MeshRenderer:
   m_ObjectHideFlags: 0

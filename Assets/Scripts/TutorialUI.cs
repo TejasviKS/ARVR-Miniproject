@@ -87,6 +87,44 @@ public static class TutorialUI
         Tick(new Vector2(box.xMax - 34f, box.y + 27f), 22f, new Color(Good.r, Good.g, Good.b, a));
     }
 
+    // ---------------------------------------------------------------- the objective strip (top left)
+    // "▶  Find the light switch": the same strip the cabin tutorial uses, for every level's objective.
+    static GUIStyle objectiveStyle;
+
+    // An opponent's health bar tells the strip where it is (screen pixels, top left origin). The strip stays in the top left
+    // corner as long as it ends before the bar starts. If the bar is wide (a boss bar nearly as wide as the screen) the strip
+    // simply drops DOWN below the bar instead, so the two never overlap, whatever width the bar has.
+    // CombatHUD sets this every frame; it is empty when there is no bar.
+    public static Rect ObjectiveAvoid = Rect.zero;
+
+    // Where the strip was last drawn, so other things (the subtitles) can keep out of its way. Empty if it is not showing.
+    static Rect objectiveRect; static float objectiveRectTime = -10f;
+    public static Rect ObjectiveRect => Time.unscaledTime - objectiveRectTime < 0.25f ? objectiveRect : Rect.zero;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetLimit() => ObjectiveAvoid = Rect.zero;
+
+    public static void ObjectiveStrip(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        if (objectiveStyle == null || objectiveStyle.fontSize == 0)
+            objectiveStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, wordWrap = true };
+        string line = "▶  " + text;
+        const float left = 18f, padX = 12f;
+        float top = 18f;
+        float maxW = Screen.width - 2f * left;
+        float w = Mathf.Min(objectiveStyle.CalcSize(new GUIContent(line)).x + 2f * padX + 6f, maxW);          // as wide as its text
+        float h = Mathf.Max(40f, objectiveStyle.CalcHeight(new GUIContent(line), w - 2f * padX) + 8f);
+        Rect bar = ObjectiveAvoid;
+        if (bar.width > 0f && left + w + 14f > bar.x && top < bar.yMax && top + h > bar.y)                  // would touch the bar?
+            top = bar.yMax + 10f;                                                                            // then sit just below it
+        objectiveRect = new Rect(left, top, w, h); objectiveRectTime = Time.unscaledTime;
+        GUI.color = new Color(0f, 0f, 0f, 0.45f);
+        GUI.DrawTexture(new Rect(left, top, w, h), Texture2D.whiteTexture);
+        Text(new Rect(left + padX, top, w - 2f * padX, h), line, objectiveStyle, Accent);
+        GUI.color = Color.white;
+    }
+
     // ---------------------------------------------------------------- shapes
     public static void Round(Rect r, Color c, float radius)
     {

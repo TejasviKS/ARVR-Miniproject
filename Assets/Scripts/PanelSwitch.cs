@@ -43,6 +43,8 @@ public class PanelSwitch : Interactable
         mats = r.materials;
     }
 
+    public override string GetPrompt() => "Press E for Switch " + Number;
+
     public override bool AcceptsClick => true;          // E or left click both press it (the prompt only mentions E: shorter on screen)
     public override bool CanInteract => panel != null && panel.Ready;
     public override void Interact(PlayerInteractor player) => panel.Press(this, player);
@@ -50,14 +52,14 @@ public class PanelSwitch : Interactable
     // Light up the switch (and its number) in a colour
     public void SetGlow(Color c)
     {
-        if (flat) { foreach (var m in mats) m.color = c; return; }
+        if (flat) { foreach (var m in mats) m.color = c; if (label != null) label.color = new Color(0.08f, 0.05f, 0.03f); return; }   // dark number on the bright glow
         foreach (var m in mats) m.SetColor("_EmissionColor", c * 1.5f);
         if (label != null) label.color = c;
     }
 
     public void ClearGlow()
     {
-        if (flat) { foreach (var m in mats) m.color = flatIdle; return; }
+        if (flat) { foreach (var m in mats) m.color = flatIdle; if (label != null) label.color = labelColor; return; }
         foreach (var m in mats) m.SetColor("_EmissionColor", Color.black);
         if (label != null) label.color = labelColor;
     }

@@ -9,6 +9,7 @@ Shader "Custom/PortalSwirl"
         _Accent ("Accent (rim + arms)", Color) = (0.12, 0.05, 0.3, 1)
         _Speed ("Swirl speed", Float) = 1
         _Halo ("Halo size (quad size / opening size)", Float) = 1.3
+        _Fade ("Fade in (0 = invisible, 1 = fully there)", Range(0, 1)) = 1
     }
     SubShader
     {
@@ -32,6 +33,7 @@ Shader "Custom/PortalSwirl"
                 half4 _Accent;
                 float _Speed;
                 float _Halo;
+                float _Fade;
             CBUFFER_END
 
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
@@ -70,7 +72,7 @@ Shader "Custom/PortalSwirl"
                 // Inside the opening: solid. Outside: a soft halo that fades away.
                 float inside = 1.0 - smoothstep(0.97, 1.0, r);
                 float haloFade = pow(saturate(1.0 - (r - 1.0) / (halo - 1.0)), 2.0) * 0.55;
-                float alpha = max(inside, (1.0 - inside) * haloFade) * _Color.a;
+                float alpha = max(inside, (1.0 - inside) * haloFade) * _Color.a * _Fade;
                 float3 col = lerp(_Color.rgb, body, inside);
                 return half4(col, alpha);
             }

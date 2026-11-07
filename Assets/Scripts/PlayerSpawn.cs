@@ -5,7 +5,9 @@ using UnityEngine.Events;
 // Remembers where the player started in this scene. Put it on an empty object ("PlayerSpawn").
 // While a scene has one, pressing R puts the player back at that spot (and facing the same way): the way out of
 // being stuck in a corner. Nothing else changes: puzzles, notes, lights and so on keep their state.
-// Scenes without one (Classroom, Cad_lab) keep the old R: just stand up / straighten the view.
+// Every scene gets one: if a scene has none, the player (PlayerInteractor) creates one at the start, so R works everywhere.
+// A teleport portal (Cad_lab: bench room -> Lab 1) moves the spawn to where it drops you off, so R never sends you back
+// to a place you already left.
 public class PlayerSpawn : MonoBehaviour
 {
     public static PlayerSpawn Current { get; private set; }
@@ -32,6 +34,19 @@ public class PlayerSpawn : MonoBehaviour
             rotation = player.transform.rotation;
         }
         else Debug.LogWarning("[PlayerSpawn] No player found in the scene.", this);
+    }
+
+    // Make this the new "start" (e.g. after a teleport portal)
+    public void SetSpawn(Vector3 newPosition, Quaternion newRotation)
+    {
+        position = newPosition;
+        rotation = Quaternion.Euler(0f, newRotation.eulerAngles.y, 0f);
+    }
+
+    // Called by the player at the start of a scene that has no PlayerSpawn of its own
+    public static void EnsureExists()
+    {
+        if (Current == null) new GameObject("PlayerSpawn (auto)").AddComponent<PlayerSpawn>();
     }
 
     public void ResetPlayer()

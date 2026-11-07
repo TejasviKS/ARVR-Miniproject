@@ -39,9 +39,11 @@ public class CodePanel : MonoBehaviour
     public Color correctColor = new Color(0.2f, 1f, 0.3f);
     public Color wrongColor = new Color(1f, 0.15f, 0.1f);
     public float pushDepth = 0.004f;      // how far a switch moves in when pressed (metres)
-    [Tooltip("In a flat realm look (a RealmStyle in the scene) the switches become plain plates of this colour...")]
+    [Tooltip("In a flat realm look (a RealmStyle in the scene) the switches become plain BLACK plates (like the cabin's) with white numbers...")]
+    public Color flatSwitchPlate = new Color(0.07f, 0.06f, 0.08f);
+    public Color flatSwitchNumber = Color.white;
+    [Tooltip("...and the sticky note becomes a light paper in this colour with writing in the dark ink")]
     public Color flatSwitchColor = new Color(1f, 0.97f, 0.86f);
-    [Tooltip("...with numbers (and the sticky note's writing) in this dark ink")]
     public Color flatInkColor = new Color(0.13f, 0.07f, 0.04f);
 
     readonly List<PanelSwitch> switches = new List<PanelSwitch>();
@@ -79,7 +81,7 @@ public class CodePanel : MonoBehaviour
             if (r.GetComponent<PanelSwitch>() != null) continue;   // already set up by another panel
             PanelSwitch s = r.gameObject.AddComponent<PanelSwitch>();
             s.Setup(this, number);
-            if (flatLook) s.UseFlatLook(flatSwitchColor, flatInkColor);
+            if (flatLook) s.UseFlatLook(flatSwitchPlate, flatSwitchNumber);
             if (showNumberLabels) s.MakeLabel(outward);
             switches.Add(s);
         }
@@ -131,7 +133,7 @@ public class CodePanel : MonoBehaviour
         {
             solved = true;
             sfx.PlayOneShot(goodClip);
-            if (lastPlayer != null) lastPlayer.ShowMessage("Correct! A portal has opened...", 4f);
+            if (lastPlayer != null) lastPlayer.ShowBanner("Correct! A portal has opened...", 4f);
             yield return Flash(correctColor, 3);
             foreach (var s in switches) s.SetGlow(correctColor);   // stay green
             if (portal != null) portal.SetActive(true);

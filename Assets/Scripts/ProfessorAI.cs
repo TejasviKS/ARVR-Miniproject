@@ -105,7 +105,49 @@ public class ProfessorAI : MonoBehaviour
         stateStart = Time.time;
     }
 
-    public void Say(string line) { Barked?.Invoke(line); }
+    // What he says: shown as a subtitle (typed out letter by letter) and spoken with the same little blips as Lab Asst. Gemini
+    public const float LettersPerSecond = 40f;
+    AudioSource voice;
+    AudioClip blipClip;
+    Coroutine speaking;
+
+    public void Say(string line)
+    {
+        Barked?.Invoke(line);
+        if (!isActiveAndEnabled) return;
+        if (speaking != null) StopCoroutine(speaking);
+        speaking = StartCoroutine(Speak(line));
+    }
+
+    IEnumerator Speak(string line)
+    {
+        if (voice == null)
+        {
+            voice = gameObject.AddComponent<AudioSource>();
+            voice.spatialBlend = 1f;                          // 3D, like Gemini: direction and distance
+            voice.rolloffMode = AudioRolloffMode.Linear;
+            voice.minDistance = 1f; voice.maxDistance = 25f;
+            voice.dopplerLevel = 0f; voice.playOnAwake = false;
+            blipClip = RiddleNPC.MakeBlip();
+        }
+        float letters = 0f;
+        int shown = 0;
+        while (shown < line.Length)
+        {
+            letters += Time.deltaTime * LettersPerSecond;
+            while (shown < line.Length && shown < (int)letters)
+            {
+                shown++;
+                if (shown % 3 == 0 && !char.IsWhiteSpace(line[shown - 1]))        // a blip every third letter, random pitch = "alien speech"
+                {
+                    voice.pitch = UnityEngine.Random.Range(0.85f, 1.3f);
+                    voice.PlayOneShot(blipClip, 0.8f);
+                }
+            }
+            yield return null;
+        }
+        speaking = null;
+    }
 
     // ================================================================ every frame
     void Update()

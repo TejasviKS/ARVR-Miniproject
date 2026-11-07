@@ -78,7 +78,7 @@ The scenes are already in the build list (**File → Build Profiles → Scene Li
 | **Left click** | Press a wall switch (same as **E**, only for the switches) |
 | **E / Space / Left click** | In a conversation: skip the typing, then go to the next line |
 | **1 / 2 / 3** or click | Pick an answer to a riddle |
-| **R** | Emergency reset: stand up, close a conversation, and fix the camera if you get stuck. Progress is kept. In the cabins it also puts you back at the spot you started at. |
+| **R** | Emergency reset in every level: stand up, close a conversation, and put you back at that level's start (facing the same way). Nothing else changes: puzzles, notes, lights and score are kept. In Cad_lab, after the Lab portal, it returns you to Lab 1's arrival point. |
 | **Esc** | Release the mouse cursor (click the Game view to lock it again) |
 
 ---
@@ -169,6 +169,10 @@ ProjectSettings/               Input, physics, graphics, build scene list, etc.
 | `CodeNote.cs` | The sticky note under the desk that shows the code. |
 | `RiddleNPC.cs` | The hologram professor: builds his body from simple shapes, adds his light and 3D sounds, runs the dialogue and riddles, and saves the score. |
 | `GameProgress.cs` | Remembers the riddle score, the penalty and the start time while you move between scenes. |
+| `Portal.cs` / `PortalTransition.cs` | A portal's vortex fades in over 50 ms when it opens, and stepping into it just teleports you (no animation). A portal to another scene starts loading that scene in the background about a second after it opens, so stepping in only has to switch to it. A portal that opens on top of you waits until you step out and back in; there is no arm delay. (`Resources/PortalWipe.shader` is no longer used.) |
+| `WastedScreen.cs` | The defeat screen: slow motion, the picture turns black and white with dark corners, a big red "Attendance 0%" in the classic Pricedown font (`Assets/Resources/Fonts/PricedownBl.otf`, free for personal use only), the "wasted" sound (`Assets/Resources/Audio/wasted.mp3`, a ripped game sound) and a small rounded Try Again button (click or Enter). Fine for this course project; remove the sound before ever publishing. The combat tutorial restarts the fight only after you press it; later fights can use `WastedScreen.Show(...)` too. |
+| `ObjectiveHUD.cs` | The level objective in the top left strip ("▶ Find a way out of this classroom"), the same strip the cabins use for "Find the light switch". The cabins give step-by-step instructions; later levels get abstract objectives, listed at the top of the script (Cad_lab has two stages and moves on when you go through the Lab portal). It creates itself when a scene loads. |
+| `PickupItem.cs` | Something you can pick up with E (used for the **Letter of Recommendation** hidden on a windowsill in the Classroom). Saves the item in `GameProgress` (`HasItem("letter_of_recommendation")`) so later levels can use it. |
 | `BeepingComputerPuzzle.cs` | CAD lab puzzle: makes screens glow, makes one computer beep, and moves on to the next one when you switch it off. It waits until the portal starts it. |
 | `ComputerSwitch.cs` | The invisible "press E" box on the beeping computer (created automatically). |
 | `Portal.cs` | Portal you walk into. It either loads the next scene (Classroom → Cad_lab) or teleports you to a point in the same scene and then disappears (one-way, bench room → Lab 1). Draws itself as a glowing vortex in its **Portal Color** (set it to the colour of the place it leads to), with a light and a 3D hum. |

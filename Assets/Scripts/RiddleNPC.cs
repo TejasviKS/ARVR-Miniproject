@@ -294,7 +294,7 @@ public class RiddleNPC : Interactable
             portal.SetActive(true);
             AudioSource.PlayClipAtPoint(openClip, portal.transform.position, 0.9f);
         }
-        if (player != null) player.ShowMessage("A portal has opened by the door!", 3f);
+        if (player != null) player.ShowBanner("A portal has opened by the door!", 3f);
         onFinished.Invoke();
         Debug.Log("[RiddleNPC] Finished: " + correctCount + "/" + riddles.Length + " right -> " + GameProgress.computersToSwitchOff + " computers to switch off.", this);
     }
@@ -496,8 +496,7 @@ public class RiddleNPC : Interactable
             return s * swell * 0.4f;
         });
         // Tiny "voice" blip for each few letters
-        blipClip = MakeClip("blip", 0.07f, t =>
-            (Mathf.Sin(2f * Mathf.PI * 520f * t) + 0.4f * Mathf.Sin(2f * Mathf.PI * 1040f * t)) * 0.3f * Mathf.Sin(Mathf.PI * t / 0.07f));
+        blipClip = MakeBlip();
         // Right answer: two rising notes
         rightClip = MakeClip("right", 0.6f, t =>
         {
@@ -515,6 +514,10 @@ public class RiddleNPC : Interactable
             return Mathf.Sin(phase) * 0.35f * Mathf.Sin(Mathf.PI * t / 1.2f);
         });
     }
+
+    // The little "voice" blip. Shared: the professors (ProfessorAI) talk with exactly the same sound.
+    public static AudioClip MakeBlip() => MakeClip("blip", 0.07f, t =>
+        (Mathf.Sin(2f * Mathf.PI * 520f * t) + 0.4f * Mathf.Sin(2f * Mathf.PI * 1040f * t)) * 0.3f * Mathf.Sin(Mathf.PI * t / 0.07f));
 
     static AudioClip MakeClip(string name, float seconds, System.Func<float, float> wave)
     {

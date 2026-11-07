@@ -13,6 +13,11 @@ public static class GameProgress
     public static int computersSwitchedOff;  // filled in when the beeping puzzle is solved
     public static float startTime;           // Time.time when the run started (for the end screen)
 
+    // Things the player picked up (kept from scene to scene), e.g. "letter_of_recommendation"
+    static readonly System.Collections.Generic.HashSet<string> items = new System.Collections.Generic.HashSet<string>();
+    public static bool HasItem(string id) => items.Contains(id);
+    public static void AddItem(string id) => items.Add(id);
+
     // Back to the start (Play Again button, and every time Play is pressed in the editor)
     public static void Reset()
     {
@@ -22,6 +27,7 @@ public static class GameProgress
         computersToSwitchOff = 0;
         computersSwitchedOff = 0;
         startTime = Time.time;
+        items.Clear();
     }
 
     // This project has "Enter Play Mode Options" on (no domain reload), which means static values

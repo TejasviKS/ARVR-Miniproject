@@ -19,8 +19,10 @@ public class PlayerInteractor : MonoBehaviour
     [HideInInspector] public bool hidePrompt;          // another script (e.g. the tutorial's note) is showing something over the screen
 
     bool cursorWasLocked;
-    string message;
+    string message;                    // small info box at the bottom ("Picked up: ...", "Code: 3 7 _ _")
     float messageUntil;
+    string banner;                     // BIG text at the top: only for a portal opening / a level being cleared
+    float bannerUntil;
     GUIStyle promptStyle, messageStyle;
 
     void Awake()
@@ -30,14 +32,17 @@ public class PlayerInteractor : MonoBehaviour
         Debug.Log("[Scripts] PlayerInteractor v8 running");
     }
 
+    void Start() => PlayerSpawn.EnsureExists();       // R = back to the start, in every scene
+
     void Update()
     {
         var kb = Keyboard.current;
         if (kb == null || cam == null) return;
+        if (WastedScreen.IsShowing) { Focused = null; return; }       // the defeat screen is up: nothing else may react (or re-enable walking)
 
         // EMERGENCY RESET: press R if anything gets stuck (instantly stand up, walking back on).
         // In scenes that have a PlayerSpawn (the cabins) it also puts you back where you started.
-        if (kb.rKey.wasPressedThisFrame)
+        if (kb.rKey.wasPressedThisFrame && !PortalTransition.Busy)      // (not in the middle of a portal transition)
         {
             if (Locked != null) Locked.ForceRelease(this);
             Locked = null;
@@ -47,7 +52,7 @@ public class PlayerInteractor : MonoBehaviour
                 PlayerSpawn.Current.ResetPlayer();
                 ShowMessage("Back at the start", 1.5f);
             }
-            else ShowMessage("View reset", 1f);
+            else ShowMessage("View reset", 1f);          // (only if the scene has no spawn at all)
         }
 
         // Safety net: if walking got switched off but nothing is holding us, switch it back on
@@ -121,11 +126,48 @@ public class PlayerInteractor : MonoBehaviour
         if (movement != null) movement.enabled = true;
     }
 
-    // Show a message at the top of the screen, e.g. "Wrong code!"
+    // A short message in a small box at the bottom of the screen (same look as the tutorial box), e.g. "Wrong code!"
     public void ShowMessage(string text, float seconds = 3f)
     {
         message = text;
         messageUntil = Time.time + seconds;
+    }
+
+    // BIG white text at the top of the screen. Only for the big moments: a portal opening / a level being cleared.
+    public void ShowBanner(string text, float seconds = 4f)
+    {
+        banner = text;
+        bannerUntil = Time.time + seconds;
+    }
+
+    static void ShadowLabel(Rect r, string text, GUIStyle style)
+    {
+        Color keep = style.normal.textColor;
+        style.normal.textColor = new Color(0.04f, 0.02f, 0.06f, 0.95f);
+        foreach (Vector2 o in new[] { new Vector2(-2f, 0f), new Vector2(2f, 0f), new Vector2(0f, -2f), new Vector2(0f, 2f), new Vector2(2f, 2f) })
+            GUI.Label(new Rect(r.x + o.x, r.y + o.y, r.width, r.height), text, style);
+        style.normal.textColor = keep;
+        GUI.Label(r, text, style);
+    }
+
+    // the small box at the bottom: the tutorial box's rounded dark panel with the gold line on top
+    void DrawInfoBox()
+    {
+        TutorialUI.Ensure();
+        float left = messageUntil - Time.time;
+        float a = Mathf.Clamp01(left / 0.35f);
+        float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.3f) * 0.9f;
+        const float w = 440f, h = 64f;
+        Matrix4x4 saved = GUI.matrix;
+        GUI.matrix = saved * Matrix4x4.TRS(new Vector3(Screen.width / 2f - w * scale / 2f, Screen.height - h * scale - 40f, 0f), Quaternion.identity, new Vector3(scale, scale, 1f));
+        Rect box = new Rect(0f, 0f, w, h);
+        TutorialUI.Panel(box, a);
+        GUIStyle st = TutorialUI.BodyStyle;
+        TextAnchor oldAnchor = st.alignment; st.alignment = TextAnchor.MiddleCenter;
+        TutorialUI.Text(new Rect(box.x + 12f, box.y + 6f, box.width - 24f, box.height - 8f), message, st, new Color(1f, 1f, 1f, a));
+        st.alignment = oldAnchor;
+        GUI.matrix = saved;
+        GUI.color = Color.white;
     }
 
     // Simple built-in UI (no Canvas setup needed)
@@ -133,11 +175,12 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (promptStyle == null || promptStyle.fontSize == 0)     // (font size 0 = Unity's GUI skin was not ready yet: build again)
         {
-            promptStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 22 };
+            promptStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 22, fontStyle = FontStyle.Bold };
             promptStyle.normal.textColor = Color.white;
-            messageStyle = new GUIStyle(promptStyle) { fontSize = 28, fontStyle = FontStyle.Bold };
+            messageStyle = new GUIStyle(promptStyle) { fontSize = 32 };
         }
 
+        if (WastedScreen.IsShowing) return;
         float cx = Screen.width / 2f, cy = Screen.height / 2f;
 
         // Crosshair dot (bigger + yellow when looking at something usable)
@@ -149,10 +192,13 @@ public class PlayerInteractor : MonoBehaviour
         GUI.DrawTexture(new Rect(cx - size / 2, cy - size / 2, size, size), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
+        // prompts are bold with a dark outline, so they stay readable in front of busy backgrounds
         if (Focused != null && !hidePrompt)
-            GUI.Label(new Rect(0, cy + 30, Screen.width, 40), Focused.GetPrompt(), promptStyle);
+            ShadowLabel(new Rect(0, cy + 30, Screen.width, 40), Focused.GetPrompt(), promptStyle);
 
-        if (!string.IsNullOrEmpty(message) && Time.time < messageUntil)
-            GUI.Label(new Rect(0, 60, Screen.width, 50), message, messageStyle);
+        if (!string.IsNullOrEmpty(banner) && Time.time < bannerUntil)
+            ShadowLabel(new Rect(0, 60, Screen.width, 50), banner, messageStyle);
+
+        if (!string.IsNullOrEmpty(message) && Time.time < messageUntil) DrawInfoBox();
     }
 }

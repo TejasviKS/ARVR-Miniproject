@@ -56,3 +56,6 @@ Thumbs.db
 
 # Personal cleanup script for the MCP tooling (not part of the project)
 /uninstall-mcp-tooling.ps1
+
+# Unity MCP screenshots (temporary)
+/Assets/Screenshots*

@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour
         yaw = transform.eulerAngles.y;
         transform.rotation = Quaternion.Euler(0f, yaw, 0f);   // body perfectly upright
         pitch = 0f;                                           // look straight ahead
+        verticalVelocity = 0f;                                // no leftover falling/jumping speed (e.g. after pressing R)
         SnapCamera();
     }
 

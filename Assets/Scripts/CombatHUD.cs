@@ -19,7 +19,7 @@ public class CombatHUD : MonoBehaviour
     struct Pop { public string text; public Color colour; public float at; }
     readonly List<Pop> pops = new List<Pop>();
     string subtitle = "", subtitleWho = "";
-    float subtitleUntil;
+    float subtitleUntil, subtitleStart;
     Color flashColour; float flashAt = -10f, flashStrength;
     string centreText = ""; float centreUntil;
     GUIStyle labelStyle, popStyle, subStyle, bigStyle, smallStyle;
@@ -29,7 +29,7 @@ public class CombatHUD : MonoBehaviour
     static void ResetStatics() => Instance = null;
 
     void Awake() { Instance = this; }
-    void OnDestroy() { if (Instance == this) Instance = null; }
+    void OnDestroy() { if (Instance == this) Instance = null; TutorialUI.ObjectiveAvoid = Rect.zero; }
 
     void Start()
     {
@@ -52,7 +52,8 @@ public class CombatHUD : MonoBehaviour
     public static void Say(string who, string line, float seconds = 3.4f)
     {
         if (Instance == null) return;
-        Instance.subtitleWho = who; Instance.subtitle = line; Instance.subtitleUntil = Time.time + seconds;
+        Instance.subtitleWho = who; Instance.subtitle = line; Instance.subtitleStart = Time.time;
+        Instance.subtitleUntil = Time.time + line.Length / ProfessorAI.LettersPerSecond + seconds;       // (the typing time is not part of the reading time)
     }
     public static void Centre(string text, float seconds)
     {
@@ -65,7 +66,7 @@ public class CombatHUD : MonoBehaviour
         labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
         smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
         popStyle = new GUIStyle(GUI.skin.label) { fontSize = 36, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-        subStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, wordWrap = true };
+        subStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true };
         bigStyle = new GUIStyle(GUI.skin.label) { fontSize = 48, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
     }
 
@@ -109,11 +110,13 @@ public class CombatHUD : MonoBehaviour
         }
 
         // the professor
+        TutorialUI.ObjectiveAvoid = Rect.zero;                  // (nothing in the way, unless his bar is drawn below)
         if (enemy != null && !enemy.Health.Dead)
         {
             shownEnemy = Mathf.MoveTowards(shownEnemy, enemy.Health.Fraction, dt * 1.5f);
             float w = Mathf.Min(enemy.healthBarWidth, Screen.width - 60f);
             Rect r = new Rect(Screen.width / 2f - w / 2f, 40f, w, 14f);
+            TutorialUI.ObjectiveAvoid = new Rect(r.x - 3f, r.y - 28f, w + 6f, 28f + r.height + 24f);      // the objective strip keeps out of this (it drops below a wide bar)
             Text(new Rect(r.x, r.y - 26f, w, 24f), enemy.displayName.ToUpper(), labelStyle, Color.Lerp(enemy.healthBarColour, Color.white, 0.75f));
             TutorialUI.Round(new Rect(r.x - 3f, r.y - 3f, r.width + 6f, r.height + 6f), new Color(0.05f, 0.02f, 0.1f, 0.85f), r.height / 2f + 3f);   // dark frame so it stands out on any room colour
             Bar(r, shownEnemy, enemy.IsStunned ? new Color(1f, 0.9f, 0.3f) : enemy.healthBarColour, new Color(0.12f, 0.06f, 0.2f, 0.95f));
@@ -126,9 +129,23 @@ public class CombatHUD : MonoBehaviour
             float w = Mathf.Min(760f, Screen.width - 80f);
             float a = Mathf.Clamp01((subtitleUntil - Time.time) / 0.4f);
             Rect r = new Rect(Screen.width / 2f - w / 2f, 92f, w, 40f);
+            Rect strip = TutorialUI.ObjectiveRect;                                   // never on top of the objective strip: sit just below it
+            if (strip.width > 0f && r.xMin < strip.xMax + 10f && r.yMax > strip.yMin - 4f && r.yMin < strip.yMax + 4f) r.y = strip.yMax + 8f;
             GUI.color = new Color(0f, 0f, 0f, 0.45f * a);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
-            Text(r, subtitleWho + ":  " + subtitle, subStyle, new Color(1f, 1f, 1f, a));
+            // the speaker's name is bold and coloured like their health bar, so it stands apart from what they say
+            Color nameColour = enemy != null ? Color.Lerp(enemy.healthBarColour, Color.white, 0.45f) : new Color(0.8f, 0.7f, 1f);
+            string hex = ColorUtility.ToHtmlStringRGB(nameColour);
+            int count = Mathf.Min(subtitle.Length, Mathf.FloorToInt((Time.time - subtitleStart) * ProfessorAI.LettersPerSecond));
+            // the letters not typed yet are still there but invisible, so the centred line does not shift sideways as it types
+            string typed = subtitle.Substring(0, count) + "<color=#00000000>" + subtitle.Substring(count) + "</color>";      // typed out like Gemini's speech
+            string rich = "<b><color=#" + hex + ">" + subtitleWho + ":</color></b>  " + typed;
+            string plain = "<b>" + subtitleWho + ":</b>  " + typed;
+            GUI.color = Color.white;
+            subStyle.normal.textColor = new Color(0f, 0f, 0f, 0.7f * a);
+            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), plain, subStyle);               // shadow (plain colour)
+            subStyle.normal.textColor = new Color(1f, 1f, 1f, a);
+            GUI.Label(r, rich, subStyle);
         }
 
         // popups rise and fade

@@ -351,7 +351,7 @@ public static class CabinSceneBuilder
         p.sceneToLoad = "Cabin_Combat";
         p.portalColor = CombatFill;
         p.accentColor = CombatLine;
-        p.armDelay = 2.5f;          // the player is probably standing at the panel right next to it when it opens: let them see it first
+        p.armDelay = 0f;            // no delay: a portal that opens on top of the player waits for them to step out first (Portal.cs)
 
         // ---- the player, and the director that runs the tutorial
         SpawnPlayer(map, new Vector3(2.05f, 3.75f, 0f), new Vector3(0f, 1f, 0f));       // by the old door frame, facing north down the room (cupboard, desk)
@@ -507,7 +507,7 @@ public static class CabinSceneBuilder
         exitPortal.sceneToLoad = "Classroom";
         exitPortal.portalColor = NextFill;
         exitPortal.accentColor = NextLine;
-        exitPortal.armDelay = 2.5f;
+        exitPortal.armDelay = 0f;
         exit.SetActive(false);
 
         var tutGo = new GameObject("CombatTutorial");

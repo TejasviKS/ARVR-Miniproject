@@ -125,10 +125,10 @@ public class CombatTutorial : MonoBehaviour
 
     IEnumerator IntroLines()
     {
-        yield return new WaitForSeconds(0.8f);
-        professor.Say("Ah. There you are. Attendance: seventy-four percent.");
+        yield return new WaitForSeconds(3.5f);                    // let the player read the tutorial box first
+        professor.Say("Ah. There you are. Attendance: 74%.");
         yield return new WaitForSeconds(3.6f);
-        professor.Say("The minimum is seventy-five. Rules are rules.");
+        professor.Say("The minimum is 75%. Rules are rules.");
     }
 
     void Complete()
@@ -221,7 +221,7 @@ public class CombatTutorial : MonoBehaviour
     {
         yield return new WaitForSeconds(2.8f);
         if (portal != null) portal.SetActive(true);
-        if (interactor != null) interactor.ShowMessage("A portal has opened!", 4f);
+        if (interactor != null) interactor.ShowBanner("A portal has opened!", 4f);
     }
 
     // you were beaten: back to the start of the fight, keeping the lesson you were on
@@ -237,9 +237,10 @@ public class CombatTutorial : MonoBehaviour
         player.InputEnabled = false;
         PlayerController pc = player.GetComponent<PlayerController>();
         if (pc != null) pc.enabled = false;
-        CombatHUD.Centre("ATTENDANCE 0%", 2.2f);
-        professor.Say("Class dismissed. Try again.");
-        yield return new WaitForSeconds(2.2f);
+        professor.Say("Class dismissed.");
+        bool tryAgain = false;
+        WastedScreen.Show(() => tryAgain = true);               // "ATTENDANCE 0%" + TRY AGAIN: nothing restarts until the player clicks it
+        while (!tryAgain) yield return null;
 
         player.Health.Restore();
         player.ResetState();
@@ -257,16 +258,11 @@ public class CombatTutorial : MonoBehaviour
         TutorialUI.Ensure();
         if (boxAlpha > 0.01f && step != Step.Done) DrawBox();
         if (step == Step.Done && portal != null && portal.activeSelf) DrawObjective("Step through the portal");
+        else if (step == Step.Finish && !done && professor != null && !professor.Health.Dead) DrawObjective("Defeat " + professor.displayName);
         GUI.color = Color.white;
     }
 
-    void DrawObjective(string text)
-    {
-        GUI.color = new Color(0f, 0f, 0f, 0.45f);
-        GUI.DrawTexture(new Rect(18f, 18f, 420f, 40f), Texture2D.whiteTexture);
-        var style = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
-        TutorialUI.Text(new Rect(30f, 18f, 400f, 40f), "▶  " + text, style, TutorialUI.Accent);
-    }
+    void DrawObjective(string text) => TutorialUI.ObjectiveStrip(text);
 
     void DrawBox()
     {

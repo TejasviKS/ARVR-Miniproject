@@ -144,7 +144,7 @@ public class TutorialDirector : MonoBehaviour
     void OnLightsOff()
     {
         if (portal != null) portal.SetActive(true);
-        if (interactor != null) interactor.ShowMessage(portalMessage, 4f);
+        if (interactor != null) interactor.ShowBanner(portalMessage, 4f);
         DestroyRing();
         done = false;
         step = Step.UsePortal;

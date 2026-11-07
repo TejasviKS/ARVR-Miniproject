@@ -350,7 +350,7 @@ public class BeepingComputerPuzzle : MonoBehaviour
 
         // All switched off: open the way
         GameProgress.computersSwitchedOff = alarms.Count;
-        if (player != null) player.ShowMessage(solvedMessage, 4f);
+        if (player != null) player.ShowBanner(solvedMessage, 4f);
         if (portal != null) portal.SetActive(true);
         onSolved.Invoke();
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -39,10 +40,11 @@ public class Portal : MonoBehaviour
     [Header("Transition")]
     [Tooltip("ON = rush in, wipe, then reveal the new place. OFF = instant (old behaviour).")]
     public bool useTransition = true;
-    [Tooltip("Seconds after the portal appears before it works. Use it when the player might be standing right where it opens (they get to SEE it first). While waiting, standing inside it also counts once the time is up.")]
+    [Tooltip("Seconds after the portal appears before it works. Normally leave this at 0: a portal that opens while you are standing INSIDE it already waits for you to step out and back in, so it never fires unseen. Any delay is a pause you can feel.")]
     public float armDelay = 0f;
 
     bool used;
+    bool mustLeaveFirst;
     float armedAt;
     PlayerController watchedPlayer;
     GameObject visual;     // the vortex (not a child of this object: this object is a thin, stretched slab)
@@ -63,16 +65,73 @@ public class Portal : MonoBehaviour
     }
 
     // The vortex follows this object being switched on and off (puzzles hide it until they're solved)
+    // the vortex fades in over a blink (50 ms) when the portal opens, so it does not simply pop into existence
+    const float FadeInTime = 0.05f;
+    Material vortexMat;
+    Light vortexLight;
+    float lightFull;
+
+    IEnumerator FadeIn()
+    {
+        for (float t = 0f; t < FadeInTime; t += Time.deltaTime)
+        {
+            float k = t / FadeInTime;
+            if (vortexMat != null) vortexMat.SetFloat("_Fade", k);
+            if (vortexLight != null) vortexLight.intensity = lightFull * k;
+            yield return null;
+        }
+        if (vortexMat != null) vortexMat.SetFloat("_Fade", 1f);
+        if (vortexLight != null) vortexLight.intensity = lightFull;
+    }
+
     void OnEnable()
     {
-        if (visual != null) visual.SetActive(true);
+        if (visual != null)
+        {
+            visual.SetActive(true);
+            if (vortexMat != null) { vortexMat.SetFloat("_Fade", 0f); if (vortexLight != null) vortexLight.intensity = 0f; }
+            StartCoroutine(FadeIn());
+        }
         armedAt = Time.time + armDelay;
+        // opened right on top of the player (e.g. standing at the switch panel next to the doorway)? Then it only works once they have stepped out of it.
+        PlayerController pcNow = FindAnyObjectByType<PlayerController>();
+        CharacterController ccNow = pcNow != null ? pcNow.GetComponent<CharacterController>() : null;
+        mustLeaveFirst = ccNow != null && GetComponent<Collider>().bounds.Intersects(ccNow.bounds);
+        if (teleportTo == null && !string.IsNullOrEmpty(sceneToLoad)) StartCoroutine(PreloadNextScene());
+    }
+
+    // ---- preloading: once the portal is open (and has stayed open for a moment), start loading the next scene in the
+    // background, but do NOT switch to it yet. Walking in then only has to flip the switch behind the cover.
+    AsyncOperation preload;
+
+    IEnumerator PreloadNextScene()
+    {
+        yield return new WaitForSeconds(0.75f);                 // (a puzzle hides and shows its portal while it sets up: wait until it is really open)
+        if (preload != null || used) yield break;
+        if (!Application.CanStreamedLevelBeLoaded(sceneToLoad) || sceneToLoad == SceneManager.GetActiveScene().name) yield break;
+        preload = SceneManager.LoadSceneAsync(sceneToLoad);
+        preload.allowSceneActivation = false;                   // load it, but stay here
+    }
+
+    // PortalTransition asks for the background load (null if there was none)
+    public AsyncOperation TakePreload()
+    {
+        AsyncOperation op = preload;
+        preload = null;
+        return op;
     }
     void OnDisable() { if (visual != null) visual.SetActive(false); }
 
     // With an arm delay, also notice a player who is ALREADY inside when it becomes active (no "enter" event happens for them)
     void Update()
     {
+        if (mustLeaveFirst)
+        {
+            if (watchedPlayer == null) watchedPlayer = FindAnyObjectByType<PlayerController>();
+            CharacterController c = watchedPlayer != null ? watchedPlayer.GetComponent<CharacterController>() : null;
+            if (c == null || !GetComponent<Collider>().bounds.Intersects(c.bounds)) mustLeaveFirst = false;     // they stepped out: it is live now
+            return;
+        }
         if (armDelay <= 0f || used || Time.time < armedAt) return;
         if (watchedPlayer == null) watchedPlayer = FindAnyObjectByType<PlayerController>();
         if (watchedPlayer == null) return;
@@ -105,7 +164,7 @@ public class Portal : MonoBehaviour
     void Use(Collider other)
     {
         PlayerController pc = other.GetComponentInParent<PlayerController>();
-        if (used || pc == null || PortalTransition.Busy) return;
+        if (used || pc == null || PortalTransition.Busy || mustLeaveFirst) return;
 
         if (teleportTo != null)
         {
@@ -154,6 +213,8 @@ public class Portal : MonoBehaviour
         CharacterController cc = pc.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
         pc.transform.SetPositionAndRotation(teleportTo.position, Quaternion.Euler(0f, teleportTo.eulerAngles.y, 0f));
+        if (PlayerSpawn.Current != null) PlayerSpawn.Current.SetSpawn(teleportTo.position, teleportTo.rotation);   // R now returns you here
+        ObjectiveHUD.NextStage();                                                                                  // (Cad_lab: the next objective)
         if (cc != null) cc.enabled = true;
 
         // Off + on again -> PlayerController.OnEnable re-syncs the camera to the new facing
@@ -201,6 +262,7 @@ public class Portal : MonoBehaviour
         quad.transform.localScale = new Vector3(width * halo, height * halo, 1f);
         MeshRenderer mr = quad.GetComponent<MeshRenderer>();
         mr.sharedMaterial = mat;
+        vortexMat = mr.material;
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         mr.receiveShadows = false;
 
@@ -214,6 +276,7 @@ public class Portal : MonoBehaviour
             l.range = Mathf.Max(width, height) * 2f;
             l.intensity = 1.6f;
             l.shadows = LightShadows.None;                      // cheap on low-end laptops
+            vortexLight = l; lightFull = l.intensity;
         }
 
         if (hum)
