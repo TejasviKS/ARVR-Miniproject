@@ -102,7 +102,10 @@ public class TutorialDirector : MonoBehaviour
 
         triangle = MakeTriangle();
         stepStart = Time.time;
+        intro = FindAnyObjectByType<CabinIntroDialogue>();            // (the player's opening lines: the tutorial starts after them)
     }
+
+    CabinIntroDialogue intro;
 
     void OnDestroy() { DestroyRing(); }
 
@@ -155,6 +158,16 @@ public class TutorialDirector : MonoBehaviour
         float dt = Time.deltaTime;
         Keyboard kb = Keyboard.current;
         Mouse mouse = Mouse.current;
+
+        // the player's opening lines come first: no box and nothing counts yet (the first step starts fresh when they are over)
+        if (intro != null && !intro.Finished)
+        {
+            boxAlpha = 0f;
+            stepStart = Time.time;
+            if (player != null) { lastPos = player.transform.position; lastYaw = player.transform.eulerAngles.y; lastPitch = Pitch(); }
+            if (interactor != null) interactor.hidePrompt = true;
+            return;
+        }
         TrackPlayer(kb);
 
         if (!done)

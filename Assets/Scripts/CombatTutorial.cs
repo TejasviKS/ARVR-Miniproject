@@ -125,11 +125,11 @@ public class CombatTutorial : MonoBehaviour
 
     IEnumerator IntroLines()
     {
-        yield return new WaitForSeconds(3.5f);                    // let the player read the tutorial box first
-        const float pause = 0.4f;                                  // a short beat between two lines
-        // while he speaks you can neither walk nor look around; the next lesson starts when he has finished
+        // from the moment you arrive until he has finished speaking you can neither walk nor look around (the next lesson starts then)
         PlayerController pc = player != null ? player.GetComponent<PlayerController>() : null;
         if (pc != null) { pc.movementLocked = true; pc.lookLocked = true; }
+        yield return new WaitForSeconds(3.5f);                    // let the player read the tutorial box first
+        const float pause = 0.4f;                                  // a short beat between two lines
         string line = "Ah. There you are.";
         professor.Say(line);
         yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + pause);

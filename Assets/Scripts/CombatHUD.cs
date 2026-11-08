@@ -19,10 +19,11 @@ public class CombatHUD : MonoBehaviour
     struct Pop { public string text; public Color colour; public float at; }
     readonly List<Pop> pops = new List<Pop>();
     string subtitle = "", subtitleWho = "";
+    Color? subtitleNameColour;
     float subtitleUntil, subtitleStart;
     Color flashColour; float flashAt = -10f, flashStrength;
     string centreText = ""; float centreUntil;
-    GUIStyle labelStyle, popStyle, subStyle, bigStyle, smallStyle;
+    GUIStyle labelStyle, popStyle, subStyle, subRowsStyle, bigStyle, smallStyle;
     float shownPlayer = 1f, shownEnemy = 1f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -59,9 +60,10 @@ public class CombatHUD : MonoBehaviour
         Instance.flashColour = colour; Instance.flashStrength = strength; Instance.flashAt = Time.time;
     }
     // seconds = how long it stays AFTER it has been typed out. Left out, it depends on the length of the line (ProfessorAI.ReadSeconds).
-    public static void Say(string who, string line, float seconds = -1f)
+    public static void Say(string who, string line, float seconds = -1f, Color? nameColour = null)
     {
         if (Instance == null) return;
+        Instance.subtitleNameColour = nameColour;                                    // null = the opponent's bar colour
         if (seconds < 0f) seconds = ProfessorAI.ReadSeconds(line);
         Instance.subtitleWho = who; Instance.subtitle = line; Instance.subtitleStart = Time.time;
         Instance.subtitleUntil = Time.time + line.Length / ProfessorAI.LettersPerSecond + seconds;       // (the typing time is not part of the reading time)
@@ -78,7 +80,24 @@ public class CombatHUD : MonoBehaviour
         smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
         popStyle = new GUIStyle(GUI.skin.label) { fontSize = 36, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
         subStyle = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true };
+        subRowsStyle = new GUIStyle(subStyle) { wordWrap = false };         // (the rows are already broken with line breaks)
         bigStyle = new GUIStyle(GUI.skin.label) { fontSize = 48, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+    }
+
+    // The subtitle broken into rows no wider than maxWidth, by whole words. The first row also has the speaker's name in front of it.
+    List<string> WrapRows(string prefix, string text, float maxWidth)
+    {
+        var rows = new List<string>();
+        string current = "";
+        foreach (string word in text.Split(' '))
+        {
+            string candidate = current.Length == 0 ? word : current + " " + word;
+            string measured = (rows.Count == 0 ? prefix : "") + candidate;
+            if (current.Length > 0 && subStyle.CalcSize(new GUIContent(measured)).x > maxWidth) { rows.Add(current); current = word; }
+            else current = candidate;
+        }
+        rows.Add(current);
+        return rows;
     }
 
     static void Text(Rect r, string s, GUIStyle st, Color c)
@@ -174,28 +193,43 @@ public class CombatHUD : MonoBehaviour
             halfWidth = Mathf.Max(halfWidth, 120f);
             float maxWidth = halfWidth * 2f;
 
-            // the full line, so the box is as big as the finished text needs (the part not typed yet is invisible but already takes its place)
-            string plainFull = "<b>" + subtitleWho + ":</b>  " + subtitle;
-            // as wide as the text (plus a little room at both ends); only a line too long for the space is wrapped, and then it uses all of it
-            float w = Mathf.Min(maxWidth, subStyle.CalcSize(new GUIContent(plainFull)).x + 40f);
-            float h = Mathf.Max(48f, subStyle.CalcHeight(new GUIContent(plainFull), w) + 16f);       // (one line = the usual 48 high box)
+            // The line is broken into rows ONCE, from the full text, with explicit line breaks, and the typing only reveals letters inside those rows.
+            // (Letting the GUI wrap the half-typed text itself could wrap it differently from the finished text, so a line would jump between one
+            // row and two while it typed.) The box is as wide as the text needs, up to the space there is; the not-yet-typed letters are invisible
+            // but already have their place, so nothing shifts sideways as it types.
+            string prefixPlain = "<b>" + subtitleWho + ":</b>  ";
+            float fullWidth = subStyle.CalcSize(new GUIContent(prefixPlain + subtitle)).x;
+            float w = Mathf.Min(maxWidth, fullWidth + 40f);
+            List<string> rows = WrapRows(prefixPlain, subtitle, w - 34f);
+            float rowHeight = subStyle.CalcSize(new GUIContent("Ag")).y;
+            float h = Mathf.Max(48f, rows.Count * rowHeight + 16f);                     // (one row = the usual 48 high box)
             float bottom = (Screen.height - 90f) / S;                                   // above the attendance bar (which is at the bottom left)
             Rect r = new Rect(cx - w / 2f, bottom - h, w, h);
             GUI.color = new Color(0f, 0f, 0f, 0.45f * a);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
             // the speaker's name is bold and coloured like their health bar, so it stands apart from what they say
-            Color nameColour = enemy != null ? Color.Lerp(enemy.healthBarColour, Color.white, 0.45f) : new Color(0.8f, 0.7f, 1f);
-            string hex = ColorUtility.ToHtmlStringRGB(nameColour);
-            int count = Mathf.Min(subtitle.Length, Mathf.FloorToInt((Time.time - subtitleStart) * ProfessorAI.LettersPerSecond));
-            // the letters not typed yet are still there but invisible, so the centred line does not shift sideways as it types
-            string typed = subtitle.Substring(0, count) + "<color=#00000000>" + subtitle.Substring(count) + "</color>";      // typed out like Gemini's speech
-            string rich = "<b><color=#" + hex + ">" + subtitleWho + ":</color></b>  " + typed;
-            string plain = "<b>" + subtitleWho + ":</b>  " + typed;
+            Color nameColour = subtitleNameColour ?? (enemy != null ? Color.Lerp(enemy.healthBarColour, Color.white, 0.45f) : new Color(0.8f, 0.7f, 1f));
+            nameColour.a = a;                                                            // (a colour tag ignores the label's own fade, so the name needs its own alpha)
+            string hex = ColorUtility.ToHtmlStringRGBA(nameColour);
+            int count = Mathf.Min(subtitle.Length, Mathf.FloorToInt((Time.time - subtitleStart) * ProfessorAI.LettersPerSecond));   // typed out like Gemini's speech
+            var rich = new System.Text.StringBuilder(); var plain = new System.Text.StringBuilder();
+            int used = 0;                                                                // letters of the line already placed in earlier rows
+            for (int i = 0; i < rows.Count; i++)
+            {
+                string row = rows[i];
+                int visible = Mathf.Clamp(count - used, 0, row.Length);
+                string tail = "<color=#00000000>" + row.Substring(visible) + "</color>";
+                string typedRow = row.Substring(0, visible) + tail;
+                if (i > 0) { rich.Append('\n'); plain.Append('\n'); }
+                rich.Append(i == 0 ? "<b><color=#" + hex + ">" + subtitleWho + ":</color></b>  " : "").Append(typedRow);
+                plain.Append(i == 0 ? prefixPlain : "").Append(typedRow);
+                used += row.Length + 1;                                                  // (+1: the space that became the line break)
+            }
             GUI.color = Color.white;
-            subStyle.normal.textColor = new Color(0f, 0f, 0f, 0.7f * a);
-            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), plain, subStyle);               // shadow (plain colour)
-            subStyle.normal.textColor = new Color(1f, 1f, 1f, a);
-            GUI.Label(r, rich, subStyle);
+            subRowsStyle.normal.textColor = new Color(0f, 0f, 0f, 0.7f * a);
+            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), plain.ToString(), subRowsStyle);        // shadow (plain colour)
+            subRowsStyle.normal.textColor = new Color(1f, 1f, 1f, a);
+            GUI.Label(r, rich.ToString(), subRowsStyle);
         }
 
         GUI.matrix = savedMatrix;

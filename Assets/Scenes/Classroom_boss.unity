@@ -852,6 +852,8 @@ MonoBehaviour:
   gravity: -9.81
   mouseSensitivity: 0.1
   eyeHeight: 1.6
+  movementLocked: 0
+  lookLocked: 0
 --- !u!143 &903167560
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2326,6 +2328,14 @@ PrefabInstance:
     - {fileID: -6201192448912829850, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     - {fileID: -7654293837723115442, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     - {fileID: -1403258469382380641, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 6210458671737510343, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: -6920690623926577443, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 5366815905363980974, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 4840439627338032995, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: -1835730463686575656, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 1461293735083494028, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 7331663566527164582, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: 8761192557529978978, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8159355769536994487, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
       insertIndex: -1

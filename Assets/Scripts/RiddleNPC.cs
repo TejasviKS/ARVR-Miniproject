@@ -399,13 +399,14 @@ public class RiddleNPC : Interactable
         if (mode == Mode.Closed) return;
         if (nameStyle == null)
         {
+            // the same look as the tutorial box and the objective strip: yellow title, white text, dark rounded panel, rounded buttons
             nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
-            nameStyle.normal.textColor = hologramColor;
+            nameStyle.normal.textColor = TutorialUI.Accent;
             textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, wordWrap = true };
             textStyle.normal.textColor = Color.white;
             hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Italic, alignment = TextAnchor.MiddleRight };
-            hintStyle.normal.textColor = new Color(0.7f, 0.7f, 0.7f);
-            buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 20, wordWrap = true };
+            hintStyle.normal.textColor = new Color(0.62f, 0.66f, 0.74f);
+            buttonStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, wordWrap = true, alignment = TextAnchor.MiddleCenter };      // (the button itself is drawn rounded below)
         }
 
         // laid out in a 'virtual' screen that is scaled up with the real one, so it is not tiny in full screen
@@ -416,24 +417,29 @@ public class RiddleNPC : Interactable
         float w = Mathf.Min(900f, sw - 40f), h = 240f;
         float x = (sw - w) / 2f, y = sh - h - 20f;
 
-        // Dark panel with a coloured line on top
-        GUI.color = new Color(0.02f, 0.05f, 0.1f, 0.85f);
-        GUI.DrawTexture(new Rect(x, y, w, h), Texture2D.whiteTexture);
-        GUI.color = hologramColor;
-        GUI.DrawTexture(new Rect(x, y, w, 3f), Texture2D.whiteTexture);
+        // Dark rounded panel with the yellow line on top: the same panel as the tutorial box
+        TutorialUI.Panel(new Rect(x, y, w, h), 1f);
         GUI.color = Color.white;
 
-        GUI.Label(new Rect(x + 20f, y + 10f, w - 40f, 30f), npcName, nameStyle);
-        GUI.Label(new Rect(x + 20f, y + 44f, w - 40f, 120f), shownText, textStyle);
+        GUI.Label(new Rect(x + 24f, y + 12f, w - 48f, 30f), npcName.ToUpper(), nameStyle);              // yellow, upper case, like "COMBAT" / "SWING"
+        GUI.Label(new Rect(x + 24f, y + 46f, w - 48f, 120f), shownText, textStyle);
 
         if (mode == Mode.Choosing)
         {
+            // rounded pill buttons, like the "Try Again" / "Main Menu" buttons: dark with a thin grey rim, they turn yellow when you point at them
             int n = order.Length;
-            float gap = 20f, bw = (w - 40f - gap * (n - 1)) / n;
+            float gap = 16f, bw = (w - 48f - gap * (n - 1)) / n, bh = 52f;
             for (int i = 0; i < n; i++)
             {
+                Rect b = new Rect(x + 24f + i * (bw + gap), y + h - 74f, bw, bh);
+                bool hover = b.Contains(Event.current.mousePosition);
+                float rad = bh * 0.32f;
+                TutorialUI.Round(new Rect(b.x - 2f, b.y - 2f, b.width + 4f, b.height + 4f), hover ? new Color(1f, 0.85f, 0.35f, 1f) : new Color(0.62f, 0.62f, 0.68f, 0.7f), rad + 2f);
+                TutorialUI.Round(b, hover ? new Color(0.86f, 0.64f, 0.08f, 0.95f) : new Color(0.07f, 0.07f, 0.09f, 0.88f), rad);
                 string label = (i < 3 ? (i + 1) + ".  " : "") + currentRiddle.options[order[i]];
-                if (GUI.Button(new Rect(x + 20f + i * (bw + gap), y + h - 70f, bw, 52f), label, buttonStyle)) Pick(i);
+                WastedScreen.Pin(buttonStyle, hover ? new Color(0.05f, 0.04f, 0.02f) : new Color(0.95f, 0.95f, 0.97f));
+                GUI.Label(new Rect(b.x + 8f, b.y, b.width - 16f, b.height), label, buttonStyle);
+                if (GUI.Button(b, GUIContent.none, GUIStyle.none)) Pick(i);
             }
         }
         else if (mode == Mode.WaitingForContinue)
