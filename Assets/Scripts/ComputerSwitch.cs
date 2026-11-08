@@ -8,6 +8,6 @@ public class ComputerSwitch : Interactable
     [HideInInspector] public BeepingComputerPuzzle puzzle;
 
     public override bool CanInteract => puzzle != null && puzzle.IsBeeping;
-    public override string GetPrompt() => "Press E to fix the computer";
+    public override string GetPrompt() => Prompt("fix the computer");
     public override void Interact(PlayerInteractor player) => puzzle.SwitchOff(player);
 }

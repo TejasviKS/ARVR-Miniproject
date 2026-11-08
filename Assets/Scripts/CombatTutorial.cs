@@ -126,10 +126,23 @@ public class CombatTutorial : MonoBehaviour
     IEnumerator IntroLines()
     {
         yield return new WaitForSeconds(3.5f);                    // let the player read the tutorial box first
-        professor.Say("Ah. There you are. Attendance: 74%.");
-        yield return new WaitForSeconds(3.6f);
-        professor.Say("The minimum is 75%. Rules are rules.");
+        const float pause = 0.4f;                                  // a short beat between two lines
+        // while he speaks you can neither walk nor look around; the next lesson starts when he has finished
+        PlayerController pc = player != null ? player.GetComponent<PlayerController>() : null;
+        if (pc != null) { pc.movementLocked = true; pc.lookLocked = true; }
+        string line = "Ah. There you are.";
+        professor.Say(line);
+        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + pause);
+        line = "Attendance: 74%.";
+        professor.Say(line);
+        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + pause);
+        line = "The minimum is 75%.";
+        professor.Say(line);
+        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line));
+        if (pc != null) { pc.movementLocked = false; pc.lookLocked = false; }
+        introLinesDone = true;
     }
+    bool introLinesDone;
 
     void Complete()
     {
@@ -151,7 +164,7 @@ public class CombatTutorial : MonoBehaviour
             switch (step)
             {
                 case Step.Intro:
-                    if (Time.time - stepStart > 7.5f) Complete();
+                    if (introLinesDone) Complete();                    // (the first lesson starts once he has finished speaking)
                     break;
                 case Step.Counter:
                     // the stun wore off before you hit him: teach the perfect block again

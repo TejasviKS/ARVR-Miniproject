@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
-// VERSION 11
+// VERSION 12
 // Walk into this to go to the next room.
 // Put it on a Cube (or any 3D object) that is a thin slab standing in a doorway. A puzzle hides it until it is solved.
 // The slab itself is only the "trigger zone": when the game starts it is hidden and replaced by a glowing
@@ -109,6 +109,8 @@ public class Portal : MonoBehaviour
         yield return new WaitForSeconds(0.75f);                 // (a puzzle hides and shows its portal while it sets up: wait until it is really open)
         if (preload != null || used) yield break;
         if (!Application.CanStreamedLevelBeLoaded(sceneToLoad) || sceneToLoad == SceneManager.GetActiveScene().name) yield break;
+        // Low priority = the main thread only spends a few milliseconds per frame on finishing the load, so the game keeps its frame rate
+        Application.backgroundLoadingPriority = ThreadPriority.Low;
         preload = SceneManager.LoadSceneAsync(sceneToLoad);
         preload.allowSceneActivation = false;                   // load it, but stay here
     }
@@ -118,9 +120,26 @@ public class Portal : MonoBehaviour
     {
         AsyncOperation op = preload;
         preload = null;
+        Application.backgroundLoadingPriority = ThreadPriority.High;      // we are switching now: finish quickly
         return op;
     }
-    void OnDisable() { if (visual != null) visual.SetActive(false); }
+
+    // The vortex (shader, light, mesh) is drawn invisibly for a few frames when the level starts, so the first time it really
+    // appears nothing has to be compiled or uploaded, which was a visible hitch.
+    bool warming;
+    class PortalWarm : MonoBehaviour
+    {
+        public Portal owner;
+        IEnumerator Start()
+        {
+            for (int i = 0; i < 4; i++) yield return null;
+            if (owner == null) yield break;
+            owner.warming = false;
+            if (!owner.isActiveAndEnabled) gameObject.SetActive(false);
+        }
+    }
+
+    void OnDisable() { if (visual != null && !warming) visual.SetActive(false); }
 
     // With an arm delay, also notice a player who is ALREADY inside when it becomes active (no "enter" event happens for them)
     void Update()
@@ -278,6 +297,9 @@ public class Portal : MonoBehaviour
             l.shadows = LightShadows.None;                      // cheap on low-end laptops
             vortexLight = l; lightFull = l.intensity;
         }
+
+        warming = true;
+        visual.AddComponent<PortalWarm>().owner = this;
 
         if (hum)
         {

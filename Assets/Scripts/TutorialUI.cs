@@ -48,6 +48,12 @@ public static class TutorialUI
         return t;
     }
 
+    // Where the tutorial box was last drawn (screen pixels, top left origin), so other things (the subtitles) can keep out of its way.
+    // Empty if no box is showing.
+    static Rect boxRect; static float boxRectTime = -10f;
+    // (the age check also rejects a time from a previous Play session, which is in the "future": there is no domain reload between plays)
+    public static Rect BoxRect => (Time.unscaledTime - boxRectTime) is float age && age >= 0f && age < 0.25f ? boxRect : Rect.zero;
+
     // ---------------------------------------------------------------- the box itself
     // Starts drawing in box coordinates (0..440 x 0..200), bottom right of the screen, scaled. Call End with what Begin gave back.
     public static Rect Begin(float scale, out Matrix4x4 saved)
@@ -55,6 +61,7 @@ public static class TutorialUI
         scale *= SizeFactor;
         saved = GUI.matrix;
         Vector3 origin = new Vector3(Screen.width - BoxW * scale - 24f, Screen.height - BoxH * scale - 24f, 0f);
+        boxRect = new Rect(origin.x, origin.y, BoxW * scale, BoxH * scale); boxRectTime = Time.unscaledTime;      // (so the subtitles can stay clear of it)
         GUI.matrix = saved * Matrix4x4.TRS(origin, Quaternion.identity, new Vector3(scale, scale, 1f));
         return new Rect(0f, 0f, BoxW, BoxH);
     }
@@ -105,7 +112,7 @@ public static class TutorialUI
 
     // Where the strip was last drawn, so other things (the subtitles) can keep out of its way. Empty if it is not showing.
     static Rect objectiveRect; static float objectiveRectTime = -10f;
-    public static Rect ObjectiveRect => Time.unscaledTime - objectiveRectTime < 0.25f ? objectiveRect : Rect.zero;
+    public static Rect ObjectiveRect => (Time.unscaledTime - objectiveRectTime) is float age && age >= 0f && age < 0.25f ? objectiveRect : Rect.zero;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetLimit() => ObjectiveAvoid = Rect.zero;

@@ -39,7 +39,7 @@ public class OpenableCupboard : Interactable
     }
 
     public override bool CanInteract => !opening && !locked;
-    public override string GetPrompt() => opened ? "Press E to read the note" : "Press E to open the cupboard";
+    public override string GetPrompt() => Prompt(opened ? "read the note" : "open the cupboard");
 
     public override void Interact(PlayerInteractor player)
     {

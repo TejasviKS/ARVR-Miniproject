@@ -1,16 +1,23 @@
 using UnityEngine;
 
-// VERSION 8
+// VERSION 9
 // Base class for EVERYTHING the player can press E on:
 // seats, switches, cupboards, doors, chairs...
 // Each specific thing (SitSpot, Switch, ...) inherits from this and says what happens in Interact().
 public abstract class Interactable : MonoBehaviour
 {
-    [Tooltip("Shown on screen as: Press E to <promptText>")]
+    [Tooltip("Shown on screen as: [E] <Prompt text>")]
     public string promptText = "interact";
 
+    // Every prompt in the game looks the same: "[E] Action". Use this so the format lives in one place.
+    public static string Prompt(string action)
+    {
+        if (string.IsNullOrEmpty(action)) return "";
+        return "[E] " + char.ToUpper(action[0]) + action.Substring(1);
+    }
+
     // Text shown below the crosshair when looking at this
-    public virtual string GetPrompt() => "Press E to " + promptText;
+    public virtual string GetPrompt() => Prompt(promptText);
 
     // Return false to temporarily disable the interaction
     public virtual bool CanInteract => true;

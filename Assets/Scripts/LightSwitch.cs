@@ -31,7 +31,7 @@ public class LightSwitch : Interactable
     }
 
     public override bool CanInteract => !used;
-    public override string GetPrompt() => "Press E to switch off the lights";
+    public override string GetPrompt() => Prompt("switch off the lights");
 
     public override void Interact(PlayerInteractor player)
     {

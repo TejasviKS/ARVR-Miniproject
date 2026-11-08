@@ -75,7 +75,7 @@ public class SitSpot : Interactable
     Quaternion SitRotation() => FacingRotation() * Quaternion.Euler(lookDownAngle, 0f, 0f);
 
     public override string GetPrompt() =>
-        player != null && player.Locked == this ? "Press E to stand up" : "Press E to sit";
+        Prompt(player != null && player.Locked == this ? "stand up" : "sit");
     public override bool CanInteract => !moving;
 
     public override void Interact(PlayerInteractor p)

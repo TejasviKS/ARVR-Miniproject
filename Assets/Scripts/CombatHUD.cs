@@ -26,7 +26,16 @@ public class CombatHUD : MonoBehaviour
     float shownPlayer = 1f, shownEnemy = 1f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void ResetStatics() => Instance = null;
+    static void ResetStatics() { Instance = null; playerBarHidden = false; playerBarAlpha = 1f; drawAlpha = 1f; }
+
+    // Your attendance bar can be hidden (the boss fight hides it during the boss's intro speech) and fades back in quickly when shown again.
+    static bool playerBarHidden; static float playerBarAlpha = 1f;
+    static float drawAlpha = 1f;                              // multiplies everything Text() and Bar() draw (used for that fade)
+    public static void SetPlayerBarHidden(bool hidden, bool instant = false)
+    {
+        playerBarHidden = hidden;
+        if (instant) playerBarAlpha = hidden ? 0f : 1f;
+    }
 
     void Awake() { Instance = this; }
     void OnDestroy() { if (Instance == this) Instance = null; TutorialUI.ObjectiveAvoid = Rect.zero; }
@@ -49,9 +58,11 @@ public class CombatHUD : MonoBehaviour
         if (Instance == null) return;
         Instance.flashColour = colour; Instance.flashStrength = strength; Instance.flashAt = Time.time;
     }
-    public static void Say(string who, string line, float seconds = 3.4f)
+    // seconds = how long it stays AFTER it has been typed out. Left out, it depends on the length of the line (ProfessorAI.ReadSeconds).
+    public static void Say(string who, string line, float seconds = -1f)
     {
         if (Instance == null) return;
+        if (seconds < 0f) seconds = ProfessorAI.ReadSeconds(line);
         Instance.subtitleWho = who; Instance.subtitle = line; Instance.subtitleStart = Time.time;
         Instance.subtitleUntil = Time.time + line.Length / ProfessorAI.LettersPerSecond + seconds;       // (the typing time is not part of the reading time)
     }
@@ -73,6 +84,7 @@ public class CombatHUD : MonoBehaviour
     static void Text(Rect r, string s, GUIStyle st, Color c)
     {
         GUI.color = Color.white;
+        c.a *= drawAlpha;
         st.normal.textColor = new Color(0f, 0f, 0f, c.a * 0.7f);
         GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), s, st);            // shadow
         st.normal.textColor = c;
@@ -81,6 +93,7 @@ public class CombatHUD : MonoBehaviour
 
     static void Bar(Rect r, float fill, Color colour, Color back)
     {
+        back.a *= drawAlpha; colour.a *= drawAlpha;
         TutorialUI.Round(r, back, r.height / 2f);
         if (fill > 0.005f) TutorialUI.Round(new Rect(r.x, r.y, Mathf.Max(r.height, r.width * Mathf.Clamp01(fill)), r.height), colour, r.height / 2f);
     }
@@ -100,13 +113,16 @@ public class CombatHUD : MonoBehaviour
         }
 
         // your attendance
-        if (player != null)
+        playerBarAlpha = Mathf.MoveTowards(playerBarAlpha, playerBarHidden ? 0f : 1f, dt * 3f);          // (fades in over about a third of a second)
+        if (player != null && playerBarAlpha > 0.01f)
         {
+            drawAlpha = playerBarAlpha;
             shownPlayer = Mathf.MoveTowards(shownPlayer, player.Health.Fraction, dt * 1.5f);
             Rect r = new Rect(24f, Screen.height - 48f, 300f, 16f);
             Text(new Rect(r.x, r.y - 24f, 200f, 22f), "ATTENDANCE", labelStyle, TutorialUI.Accent);
             Text(new Rect(r.x + 100f, r.y - 24f, 200f, 22f), Mathf.CeilToInt(player.Health.Current) + "%", smallStyle, Color.white);
             Bar(r, shownPlayer, Color.Lerp(new Color(0.9f, 0.25f, 0.2f), new Color(0.4f, 0.9f, 0.5f), player.Health.Fraction), new Color(0f, 0f, 0f, 0.55f));
+            drawAlpha = 1f;
         }
 
         // the opponent's bar + name and what he says are drawn in a 'virtual' screen that is scaled up with the real one (S),
@@ -121,24 +137,50 @@ public class CombatHUD : MonoBehaviour
         if (enemy != null && !enemy.Health.Dead)
         {
             shownEnemy = Mathf.MoveTowards(shownEnemy, enemy.Health.Fraction, dt * 1.5f);
-            float w = Mathf.Min(enemy.healthBarWidth, sw - 60f);
+            float w = enemy.barScreenFraction > 0f ? sw * enemy.barScreenFraction : Mathf.Min(enemy.healthBarWidth, sw - 60f);
             Rect r = new Rect(sw / 2f - w / 2f, 40f, w, 14f);
             TutorialUI.ObjectiveAvoid = new Rect((r.x - 3f) * S, (r.y - 33f) * S, (w + 6f) * S, (33f + r.height + 24f) * S);      // (screen pixels) the objective strip keeps out of this (it drops below a wide bar)
             Text(new Rect(r.x, r.y - 31f, w, 28f), enemy.displayName.ToUpper(), labelStyle, Color.Lerp(enemy.healthBarColour, Color.white, 0.75f));
             TutorialUI.Round(new Rect(r.x - 3f, r.y - 3f, r.width + 6f, r.height + 6f), new Color(0.05f, 0.02f, 0.1f, 0.85f), r.height / 2f + 3f);   // dark frame so it stands out on any room colour
             Bar(r, shownEnemy, enemy.IsStunned ? new Color(1f, 0.9f, 0.3f) : enemy.healthBarColour, new Color(0.12f, 0.06f, 0.2f, 0.95f));
+            // boss: thin notches where the next phase starts, and the phase name under the bar's left end
+            if (enemy.barNotches != null)
+                foreach (float n in enemy.barNotches)
+                {
+                    float nx = r.x + r.height / 2f + (r.width - r.height) * Mathf.Clamp01(n);
+                    GUI.color = new Color(1f, 1f, 1f, 0.8f);
+                    GUI.DrawTexture(new Rect(nx - 1f, r.y - 2f, 2f, r.height + 4f), Texture2D.whiteTexture);
+                    GUI.color = Color.white;
+                }
+            if (!string.IsNullOrEmpty(enemy.barTag))
+            {
+                GUIStyle left = new GUIStyle(smallStyle) { alignment = TextAnchor.MiddleLeft };
+                Text(new Rect(r.x, r.yMax + 2f, w * 0.5f, 22f), enemy.barTag.ToUpper(), left, Color.Lerp(enemy.healthBarColour, Color.white, 0.5f));
+            }
             if (enemy.IsStunned) Text(new Rect(r.x, r.yMax + 2f, w, 22f), "STUNNED: DOUBLE DAMAGE", smallStyle, new Color(1f, 0.9f, 0.3f));
         }
 
-        // what he says
+        // what he says: at the BOTTOM of the screen, just above your attendance bar. It is centred, at most 820 wide, and long lines wrap onto
+        // more lines (the box grows upwards). While a tutorial box is showing at the bottom right, the dialogue stays to the left of it.
         if (Time.time < subtitleUntil)
         {
-            float w = Mathf.Min(820f, sw - 80f);
             float a = Mathf.Clamp01((subtitleUntil - Time.time) / 0.4f);
-            Rect r = new Rect(sw / 2f - w / 2f, 96f, w, 48f);
-            Rect s0 = TutorialUI.ObjectiveRect;                                      // never on top of the objective strip: sit just below it
-            Rect strip = new Rect(s0.x / S, s0.y / S, s0.width / S, s0.height / S);   // (strip is in screen pixels; this is in scaled units)
-            if (strip.width > 0f && r.xMin < strip.xMax + 10f && r.yMax > strip.yMin - 4f && r.yMin < strip.yMax + 4f) r.y = strip.yMax + 8f;
+            // always centred on the SCREEN. When the tutorial box is showing at the bottom right, the dialogue only gets narrower
+            // (equally on both sides, so it stays centred) until it ends 20 px before that box
+            float cx = sw / 2f;
+            float halfWidth = Mathf.Min(820f, sw - 80f) / 2f;
+            Rect panel = TutorialUI.BoxRect;                                          // (screen pixels)
+            if (panel.width > 0f) halfWidth = Mathf.Min(halfWidth, panel.x / S - 20f / S - cx);
+            halfWidth = Mathf.Max(halfWidth, 120f);
+            float maxWidth = halfWidth * 2f;
+
+            // the full line, so the box is as big as the finished text needs (the part not typed yet is invisible but already takes its place)
+            string plainFull = "<b>" + subtitleWho + ":</b>  " + subtitle;
+            // as wide as the text (plus a little room at both ends); only a line too long for the space is wrapped, and then it uses all of it
+            float w = Mathf.Min(maxWidth, subStyle.CalcSize(new GUIContent(plainFull)).x + 40f);
+            float h = Mathf.Max(48f, subStyle.CalcHeight(new GUIContent(plainFull), w) + 16f);       // (one line = the usual 48 high box)
+            float bottom = (Screen.height - 90f) / S;                                   // above the attendance bar (which is at the bottom left)
+            Rect r = new Rect(cx - w / 2f, bottom - h, w, h);
             GUI.color = new Color(0f, 0f, 0f, 0.45f * a);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
             // the speaker's name is bold and coloured like their health bar, so it stands apart from what they say

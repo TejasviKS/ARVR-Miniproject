@@ -110,7 +110,7 @@ The code is set on the `CodePanel` component in the Classroom scene (currently `
   | 1 | 5 |
   | 0 | 6 |
 
-- After the last question, a **portal** appears by the door. It's one-way: walk in and you appear in Lab 1.
+- After the last question, a **portal** appears. It's one-way: walk in and you appear in Lab 1.
 - In Lab 1 the objective reads "Fix N computers in the lab (done/N)". One computer is **beeping** (3D sound): follow the sound to get close. Its screen only glitches now and then and shows a small error message, so the audio is the main clue. Look at it and press **E** to fix it; then the next one starts beeping somewhere else. The computers are picked at random (from the 40 in Lab 1) each time you play.
 - If you play `Cad_lab` directly without the quiz (for testing), it uses 3 computers.
 - The questions and every line he says are plain fields on the Keeper object in `Cad_lab.unity` (`RiddleNPC`), so they are easy to change.

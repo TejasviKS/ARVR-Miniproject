@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Height of the eyes above the player's feet (metres)")]
     public float eyeHeight = 1.6f;
 
+    [Tooltip("ON = WASD does nothing. The professors' intro speeches use this (together with Look Locked).")]
+    public bool movementLocked;
+    [Tooltip("ON = the mouse does not turn the view. Used together with Movement Locked while a professor gives his intro speech.")]
+    public bool lookLocked;
+
     CharacterController controller;
     Transform cam;                        // the camera inside the Player (found automatically)
     float verticalVelocity;               // up/down speed (gravity + jumping)
@@ -65,7 +70,7 @@ public class PlayerController : MonoBehaviour
         if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked) LockCursor(true);
 
         // ---- Look around ----
-        if (Cursor.lockState == CursorLockMode.Locked)
+        if (Cursor.lockState == CursorLockMode.Locked && !lookLocked)
         {
             Vector2 delta = mouse.delta.ReadValue() * mouseSensitivity;
             yaw += delta.x;
@@ -77,6 +82,7 @@ public class PlayerController : MonoBehaviour
         // ---- Walk ----
         float x = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
         float z = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
+        if (movementLocked) { x = 0f; z = 0f; }
         Vector3 move = transform.right * x + transform.forward * z;
         if (move.sqrMagnitude > 1f) move.Normalize();         // no faster diagonals
         float speed = kb.leftShiftKey.isPressed ? runSpeed : walkSpeed;

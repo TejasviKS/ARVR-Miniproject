@@ -44,6 +44,15 @@ public class Health : MonoBehaviour
         return dealt;
     }
 
+    // Jump to an exact value (the boss's fake-out heals him from 0 to 20%). Also brings a "dead" owner back.
+    public void SetCurrent(float value)
+    {
+        Current = Mathf.Clamp(value, 0f, max);
+        Dead = Current <= 0f && Dead;
+        if (Current > 0f) Dead = false;
+        Changed?.Invoke();
+    }
+
     public void Restore()
     {
         Current = StartValue;

@@ -2337,6 +2337,8 @@ MonoBehaviour:
   correctColor: {r: 0.2, g: 1, b: 0.3, a: 1}
   wrongColor: {r: 1, g: 0.15, b: 0.1, a: 1}
   pushDepth: 0.004
+  flatSwitchPlate: {r: 0.07, g: 0.06, b: 0.08, a: 1}
+  flatSwitchNumber: {r: 1, g: 1, b: 1, a: 1}
   flatSwitchColor: {r: 1, g: 0.97, b: 0.86, a: 1}
   flatInkColor: {r: 0.13, g: 0.07, b: 0.04, a: 1}
 --- !u!4 &886040423
@@ -6609,6 +6611,7 @@ PrefabInstance:
     - {fileID: -7784724376260530732, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     - {fileID: 1395335196172035890, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     - {fileID: -7448179547250338786, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
+    - {fileID: -1831514931120627828, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8159355769536994487, guid: 4bb0374deb999ed4a83fd0afb4294b72, type: 3}
       insertIndex: -1

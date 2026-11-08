@@ -64,9 +64,9 @@ public class RiddleNPC : Interactable
     public string wrongLine = "Not quite. The answer is: {0}.";
     [Tooltip("{0} = how many right, {1} = how many questions, {2} = e.g. \"3 computers\"")]
     [TextArea(1, 3)] public string scoreLine = "{0} out of {1} correct. You'll need to fix {2}.";
-    [TextArea(1, 3)] public string[] outroLines = { "Head through the portal by the door when you're ready. The faulty computers are in Lab 1." };
+    [TextArea(1, 3)] public string[] outroLines = { "Head through the portal when you're ready. The faulty computers are in Lab 1." };
     [Tooltip("Said when you talk to him again after finishing")]
-    public string afterLine = "The faulty computers are in Lab 1, through the portal by the door.";
+    public string afterLine = "The faulty computers are in Lab 1, through the portal.";
 
     [Header("Computers to fix for each score")]
     [Tooltip("Element 0 = 0 right, Element 1 = 1 right, Element 2 = 2 right, Element 3 = 3 right. At least 3, at most 6.")]
@@ -173,7 +173,7 @@ public class RiddleNPC : Interactable
     }
 
     // ================= Interactable =================
-    public override string GetPrompt() => mode != Mode.Closed ? "" : "Press E to talk to " + npcName;
+    public override string GetPrompt() => mode != Mode.Closed ? "" : Prompt("talk to " + npcName);
 
     public override void Interact(PlayerInteractor p)
     {
@@ -298,7 +298,7 @@ public class RiddleNPC : Interactable
             portal.SetActive(true);
             AudioSource.PlayClipAtPoint(openClip, portal.transform.position, 0.9f);
         }
-        if (player != null) player.ShowBanner("A portal has opened by the door!", 3f);
+        if (player != null) player.ShowBanner("A portal has opened!", 3f);
         onFinished.Invoke();
         Debug.Log("[RiddleNPC] Finished: " + correctCount + "/" + riddles.Length + " right -> " + GameProgress.computersToSwitchOff + " computers to fix.", this);
     }

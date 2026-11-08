@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Cad_lab.unity
     guid: 454a59ef9cbbc4d4b97ff98847f224c1
+  - enabled: 1
+    path: Assets/Scenes/Classroom_boss.unity
+    guid: a89f70b563c394a47b713896f35958b3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

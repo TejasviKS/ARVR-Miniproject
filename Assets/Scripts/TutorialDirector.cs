@@ -485,7 +485,7 @@ public class TutorialDirector : MonoBehaviour
             }
             case Step.UseCupboard:
             {
-                title = "INTERACT"; body = "Look at the cupboard and press E to open it.";
+                title = "INTERACT"; body = "Look at the cupboard and press [E] to open it.";
                 small = "E works on most things you can look at.";
                 Keyboard kb = Keyboard.current;
                 Key(new Rect(icon.x - 36f, icon.y - 36f, 72f, 72f), "E", kb != null && kb.eKey.isPressed, a);
@@ -574,6 +574,6 @@ public class TutorialDirector : MonoBehaviour
         Color faint = new Color(0.35f, 0.3f, 0.2f, a);
         Text(new Rect(r.x, r.y + 14f * pop, w, 28f), "a note, stuck to the back of the cupboard", noteTitleStyle, faint);
         Text(new Rect(r.x + 24f, r.y + 50f * pop, w - 48f, h - 100f * pop), noteText, noteStyle, new Color(0.1f, 0.1f, 0.25f, a));
-        Text(new Rect(r.x, r.y + h - 40f * pop, w, 28f), noteAuto ? "Press E to continue" : "Press E to close", noteTitleStyle, faint);
+        Text(new Rect(r.x, r.y + h - 40f * pop, w, 28f), noteAuto ? "[E] Continue" : "[E] Close", noteTitleStyle, faint);
     }
 }

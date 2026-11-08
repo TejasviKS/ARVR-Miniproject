@@ -25,6 +25,22 @@ public class ProfessorAI : MonoBehaviour
     public float healthBarWidth = 300f;
     [Tooltip("Colour of this opponent's health bar")]
     public Color healthBarColour = new Color(0.58f, 0.27f, 0.92f);
+    [Tooltip("Colour of his hologram body (the boss uses a different one)")]
+    public Color bodyColour = new Color(1f, 0.22f, 0.62f);
+    public enum BodyStyle { Rectangular, Triangular }
+    [Tooltip("Rectangular = Prof. GPT. Triangular = Prof. Claude, the boss: a taller, sharper, floating body made of triangles")]
+    public BodyStyle bodyStyle = BodyStyle.Rectangular;
+
+    [Header("For the boss fight (BossFight.cs switches these; leave them alone in the tutorial)")]
+    [Tooltip("ON = his own decisions are paused: he still faces you, gets stunned, and can be hit, but starts no attack by himself")]
+    public bool brainPaused;
+    [Tooltip("0 = the bar is Health Bar Width wide. Above 0 = the bar takes this share of the SCREEN width (0.7 = 70%), whatever the screen size")]
+    [Range(0f, 0.95f)] public float barScreenFraction = 0f;
+    [Tooltip("Positions (0..1) of the notches drawn on his health bar, and the small tag under it (the phase name)")]
+    public float[] barNotches;
+    public string barTag = "";
+    [Tooltip("ON = a heavy hit does not break his wind-up (the boss's blink strike)")]
+    public bool uninterruptible;
 
     [Header("What he is allowed to do (the tutorial switches these)")]
     [Tooltip("OFF = he just stands and talks (no attacks, keeps his distance)")]
@@ -51,7 +67,7 @@ public class ProfessorAI : MonoBehaviour
     public float moveSpeed = 1.7f;
     public float stunTime = 3f;
 
-    public enum State { Idle, Chase, TelegraphMelee, Swing, TelegraphChalk, Recover, Stunned, Dead }
+    public enum State { Idle, Chase, TelegraphMelee, Swing, TelegraphChalk, Recover, Stunned, Dead, TelegraphLunge, Lunge, TelegraphVolley }
     public State Current { get; private set; } = State.Idle;
     public Health Health { get; private set; }
     public bool IsStunned => Current == State.Stunned;
@@ -107,6 +123,12 @@ public class ProfessorAI : MonoBehaviour
 
     // What he says: shown as a subtitle (typed out letter by letter) and spoken with the same little blips as Lab Asst. Gemini
     public const float LettersPerSecond = 40f;
+
+    // How long a line should stay on screen, by its length (the usual subtitle rule of thumb: about 16 characters a second to read,
+    // at least 1.6 s even for a very short line). The time to TYPE it out (LettersPerSecond) comes on top of that.
+    public static float ReadSeconds(string line) => Mathf.Max(1.6f, 0.7f + (line != null ? line.Length : 0) / 16f);
+    // typing + reading: how long until the line is over. Wait this (plus a short pause between speakers) before the next line.
+    public static float LineSeconds(string line) => (line != null ? line.Length : 0) / LettersPerSecond + ReadSeconds(line);
     AudioSource voice;
     AudioClip blipClip;
     Coroutine speaking;
@@ -162,7 +184,7 @@ public class ProfessorAI : MonoBehaviour
         float inState = Time.time - stateStart;
 
         // face the player (not while stunned)
-        if (Current != State.Stunned && dist > 0.1f)
+        if (Current != State.Stunned && Current != State.Lunge && Current != State.TelegraphLunge && dist > 0.1f)
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(toPlayer), 220f * Time.deltaTime);
 
         switch (Current)
@@ -170,6 +192,7 @@ public class ProfessorAI : MonoBehaviour
             case State.Idle:
             case State.Chase:
             {
+                if (brainPaused) { Walk(Vector3.zero); break; }                                    // the boss director is in charge
                 float stopAt = aggressive ? (useMelee ? meleeRange * 0.85f : 4.2f) : 3.2f;        // calm: keeps his distance and talks
                 if (dist > stopAt + 0.2f) { Current = State.Chase; Walk(toPlayer.normalized * moveSpeed); }
                 else { Current = State.Idle; Walk(Vector3.zero); }
@@ -237,12 +260,36 @@ public class ProfessorAI : MonoBehaviour
         stateStart = Time.time;
         recoverFor = recover; retreatTime = 0f;
         impactSoonSent = false;
-        if (s == State.TelegraphMelee || s == State.TelegraphChalk)
+        if (s == State.TelegraphMelee || s == State.TelegraphChalk || s == State.TelegraphLunge || s == State.TelegraphVolley)
         {
             CombatSfx.Play(CombatSfx.Clip.Telegraph, transform.position, 0.8f);
             Telegraphing?.Invoke(s);
         }
     }
+
+    // ---- what the boss director uses (BossFight.cs)
+    public void SetState(State s, float recover = 0f) { if (Current != State.Dead) Begin(s, recover); }
+    public Vector3 MoveBy(Vector3 delta) { Vector3 before = transform.position; cc.Move(delta); return transform.position - before; }
+    public void Teleport(Vector3 position)
+    {
+        cc.enabled = false;
+        transform.position = position;
+        cc.enabled = true;
+    }
+    public void StunNow() { if (Current != State.Dead) Stun(); }
+    public void SetBodyVisible(bool visible) { if (body != null) body.gameObject.SetActive(visible); }
+
+    // The "beaten" slouch (the boss's fake-out): the arms hang limp, the head drops, the body sags and leans forward, the light dies and the
+    // whole hologram goes grey. It eases in over about a second and out again the same way.
+    bool slouching; float slouch;
+    public void SetSlouch(bool on)
+    {
+        slouching = on;
+        SetTint(on ? new Color(0.25f, 0.25f, 0.3f) : (Color?)null);
+    }
+    public static Mesh SigilMesh(float radius) => FlatTriangle(radius);        // a flat glowing triangle for the floor warnings
+    public void ResetTimers(float meleeIn, float chalkIn) { nextMeleeAt = Time.time + meleeIn; nextChalkAt = Time.time + chalkIn; }
+    public float StateTime => Time.time - stateStart;
 
     void Walk(Vector3 velocity)
     {
@@ -295,7 +342,7 @@ public class ProfessorAI : MonoBehaviour
             Vector3 away = transform.position - from; away.y = 0f;
             pushDir = away.normalized; pushSpeed = 6f;
             // a heavy swing breaks his concentration
-            if (Current == State.TelegraphMelee || Current == State.TelegraphChalk) { Begin(State.Recover, 0.9f); }
+            if (!uninterruptible && (Current == State.TelegraphMelee || Current == State.TelegraphChalk || Current == State.TelegraphVolley)) { Begin(State.Recover, 0.9f); }
         }
     }
 
@@ -345,16 +392,20 @@ public class ProfessorAI : MonoBehaviour
     // instead of soft cyan, an amber visor, and a glitchy signal. Like EVE from WALL-E, but made of edges: one body,
     // one head, two floating arms. (A more complex design with a mortarboard and orbiting shards is saved in
     // seventhFloor/ProfessorAI_complex_design_for_boss.cs.txt, for Prof. Claude.)
-    static readonly Color Rim = new Color(1f, 0.22f, 0.62f), Amber = new Color(1f, 0.72f, 0.15f), Chalky = new Color(1f, 0.95f, 0.8f);
+    Color Rim => bodyColour;
+    static readonly Color Amber = new Color(1f, 0.72f, 0.15f), Chalky = new Color(1f, 0.95f, 0.8f);
     Transform hat, disc;
     Transform[] shards;
     Light glow;
+    // how the body is animated (the triangular boss body changes these)
+    float shardRadius = 0.62f, shardHeight = 1.25f, hoverHeight = 0f, bobAmount = 0.012f, glowBase = 1.4f, raiseRight = -165f, raiseLeft = -150f;
 
     void BuildBody()
     {
         Shader hostile = Shader.Find("Custom/HologramHostile");
         Shader additive = Shader.Find("Custom/Hologram");
         if (hostile == null || additive == null) { Debug.LogWarning("[ProfessorAI] Hologram shaders not found: the professor will be invisible.", this); return; }
+        if (bodyStyle == BodyStyle.Triangular) { BuildBossBody(hostile, additive, false); return; }
 
         body = new GameObject("Body").transform;
         body.SetParent(transform, false);
@@ -378,7 +429,201 @@ public class ProfessorAI : MonoBehaviour
         lightObj.transform.SetParent(body, false);
         lightObj.transform.localPosition = new Vector3(0f, 1.2f, 0.3f);
         glow = lightObj.AddComponent<Light>();
-        glow.type = LightType.Point; glow.color = new Color(1f, 0.3f, 0.65f); glow.range = 4f; glow.intensity = 1.4f; glow.shadows = LightShadows.None;
+        glow.type = LightType.Point; glow.color = Color.Lerp(bodyColour, Color.white, 0.15f); glow.range = 4f; glow.intensity = 1.4f; glow.shadows = LightShadows.None;
+    }
+
+    // ================================================================ Prof. Claude: the boss body, made only of TRIANGLES
+    // GPT is rectangular, Gemini is round, so Claude is triangular. He is built to feel like a boss: taller than you, broad
+    // at the shoulders and tapering to a point, floating with no legs, a single hard slit for an eye, a broken crown of spikes
+    // slowly turning above his head, huge pauldrons, a cloak of hanging blades, floating arms ending in a blade, a glowing core
+    // in his chest, shards orbiting him, and a glowing triangle on the floor under him. Everything is a flat-shaded triangular
+    // prism built in code (no model), and it uses the same arm / crown / shard fields the animation already drives.
+    Color eyeColour => new Color(1f, 0.32f, 0.1f);
+
+    // TWO FORMS. The base form (what he is in Haiku, Sonnet and Opus) is deliberately simple: an inverted-triangle torso, a floating
+    // triangle head with one slit for an eye, two floating arms and a sigil. The FULL form (his true shape, shown when he becomes
+    // Fable) adds the chest core, the cloak blades, the pauldrons, the broken crown and the orbiting shards.
+    // SetForm(true, true) swaps one for the other with a flash and a swell; BossFight does that when Fable begins.
+    public bool IsFullForm { get; private set; }
+    float formChangedAt = -10f;
+
+    public void SetForm(bool full, bool animate)
+    {
+        if (bodyStyle != BodyStyle.Triangular || (IsFullForm == full && body != null)) return;
+        if (body != null) Destroy(body.gameObject);
+        parts.Clear(); baseColours.Clear();
+        hat = null; shards = null; disc = null; glow = null;
+        Shader hostile = Shader.Find("Custom/HologramHostile"), additive = Shader.Find("Custom/Hologram");
+        if (hostile == null || additive == null) return;
+        BuildBossBody(hostile, additive, full);
+        if (animate) { formChangedAt = Time.time; flashUntil = Time.time + 0.6f; CombatSfx.Play(CombatSfx.Clip.Heavy, transform.position, 1f); }
+    }
+
+    void BuildBossBody(Shader hostile, Shader additive, bool full)
+    {
+        IsFullForm = full;
+        // animation settings for this body
+        shardRadius = 1.15f; shardHeight = 1.35f; hoverHeight = full ? 0.14f : 0.1f; bobAmount = 0.045f; glowBase = full ? 2.4f : 1.8f;
+        raiseRight = -115f; raiseLeft = -110f;                                            // the arms stay inside the room's ceiling
+
+        body = new GameObject("Body").transform;
+        body.SetParent(transform, false);
+
+        // torso: an inverted triangle, wide at the shoulders and pointing at the floor
+        MeshPart(hostile, TriPrism(full ? 1.3f : 1.15f, full ? 1.2f : 1.3f, full ? 0.45f : 0.4f, false), body, new Vector3(0f, 1.1f, 0f), Vector3.zero, Rim);
+
+        if (full)
+        {
+            // the core: a small glowing triangle in his chest
+            MeshPart(additive, TriPrism(0.34f, 0.38f, 0.05f, false), body, new Vector3(0f, 1.3f, 0.25f), Vector3.zero, eyeColour, 2.2f);
+            // the cloak: three blades hanging below, the middle one longest
+            MeshPart(hostile, TriPrism(0.32f, 1.05f, 0.07f, false), body, new Vector3(0f, 0.62f, -0.06f), Vector3.zero, Rim);
+            MeshPart(hostile, TriPrism(0.30f, 0.80f, 0.07f, false), body, new Vector3(-0.42f, 0.78f, -0.04f), Vector3.zero, Rim);
+            MeshPart(hostile, TriPrism(0.30f, 0.80f, 0.07f, false), body, new Vector3(0.42f, 0.78f, -0.04f), Vector3.zero, Rim);
+            // pauldrons: two huge spikes pointing up and out
+            MeshPart(hostile, TriPrism(0.8f, 0.66f, 0.32f, true), body, new Vector3(-0.9f, 1.78f, 0f), new Vector3(0f, 0f, 26f), Rim);
+            MeshPart(hostile, TriPrism(0.8f, 0.66f, 0.32f, true), body, new Vector3(0.9f, 1.78f, 0f), new Vector3(0f, 0f, -26f), Rim);
+        }
+
+        // the head: an inverted triangle with ONE hard slit for an eye
+        head = new GameObject("Head").transform;
+        head.SetParent(body, false);
+        head.localPosition = new Vector3(0f, 1.9f, 0f);
+        MeshPart(hostile, TriPrism(0.56f, 0.46f, 0.36f, false), head, Vector3.zero, Vector3.zero, Rim);
+        Part(additive, PrimitiveType.Cube, head, new Vector3(0f, 0.07f, 0.185f), new Vector3(0.28f, 0.045f, 0.02f), eyeColour, Vector3.zero);
+
+        if (full)
+        {
+            // the broken crown: five spikes in a ring, turning slowly above him
+            hat = new GameObject("Crown").transform;
+            hat.SetParent(body, false);
+            hat.localPosition = new Vector3(0f, 2.1f, 0f);
+            for (int k = 0; k < 5; k++)
+            {
+                float a = k * 72f;
+                Vector3 p = new Vector3(Mathf.Sin(a * Mathf.Deg2Rad), 0f, Mathf.Cos(a * Mathf.Deg2Rad)) * 0.42f;
+                MeshPart(hostile, TriPrism(0.2f, k % 2 == 0 ? 0.42f : 0.3f, 0.07f, true), hat, p + Vector3.up * 0.18f, new Vector3(14f, a, 0f), Rim);
+            }
+        }
+
+        // arms: floating, ending in a blade (right) and a shard of chalk (left)
+        float shoulderX = full ? 0.95f : 0.85f;
+        rightArm = MakeBossArm(hostile, new Vector3(shoulderX, 1.5f, 0.05f));
+        leftArm = MakeBossArm(hostile, new Vector3(-shoulderX, 1.5f, 0.05f));
+        pointerR = MeshPart(additive, TriPrism(0.14f, 0.8f, 0.04f, false), rightArm, new Vector3(0f, -0.92f, 0f), Vector3.zero, Amber, 2f);
+        chalkR = MeshPart(additive, TriPrism(0.16f, 0.24f, 0.05f, false), leftArm, new Vector3(0f, -0.75f, 0.05f), Vector3.zero, Chalky, 2f);
+
+        if (full)
+        {
+            // shards orbiting him
+            shards = new Transform[4];
+            for (int i = 0; i < 4; i++)
+                shards[i] = MeshPart(hostile, TriPrism(0.2f, 0.36f, 0.05f, true), body, Vector3.zero, Vector3.zero, Rim).transform;
+        }
+
+        // the sigil: a glowing triangle on the floor, pulsing (AnimateBody scales this object); bigger in the full form
+        disc = MeshPart(additive, FlatTriangle(full ? 2.0f : 1.5f), body, new Vector3(0f, 0.03f, 0f), Vector3.zero, Rim * 0.85f, 1.0f).transform;
+
+        GameObject lightObj = new GameObject("Glow");
+        lightObj.transform.SetParent(body, false);
+        lightObj.transform.localPosition = new Vector3(0f, 1.3f, 0.5f);
+        glow = lightObj.AddComponent<Light>();
+        glow.type = LightType.Point; glow.color = Color.Lerp(bodyColour, new Color(1f, 0.3f, 0.1f), 0.5f); glow.range = 6f; glow.intensity = glowBase; glow.shadows = LightShadows.None;
+    }
+
+    Transform MakeBossArm(Shader hostile, Vector3 shoulder)
+    {
+        Transform pivot = new GameObject("Arm").transform;
+        pivot.SetParent(body, false);
+        pivot.localPosition = shoulder;
+        MeshPart(hostile, TriPrism(0.3f, 0.6f, 0.2f, false), pivot, new Vector3(0f, -0.32f, 0f), Vector3.zero, Rim);
+        return pivot;
+    }
+
+    Renderer MeshPart(Shader shader, Mesh mesh, Transform parent, Vector3 pos, Vector3 euler, Color colour, float strength = 0f)
+    {
+        GameObject go = new GameObject("Part");
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = pos;
+        go.transform.localRotation = Quaternion.Euler(euler);
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        MeshRenderer mr = go.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = new Material(shader) { color = colour };
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        if (shader.name == "Custom/Hologram") mr.material.SetFloat("_Strength", strength > 0f ? strength : 1.6f);
+        else if (shader.name == "Custom/HologramHostile")
+        {
+            // the boss is a SOLID dark presence (near-black, almost opaque core) with a hard glowing edge and an occasional glitch:
+            // it must stay heavy and readable against any room colour
+            Material m = mr.material;
+            m.SetColor("_CoreColor", new Color(0.02f, 0.0f, 0.02f));
+            m.SetFloat("_CoreAlpha", 0.95f);
+            m.SetFloat("_RimPower", 3.5f);
+            m.SetFloat("_Strength", 1.1f);
+            m.SetFloat("_Glitch", 0.35f);
+        }
+        parts.Add(mr);
+        baseColours.Add(colour);
+        return mr;
+    }
+
+    // ---- triangle meshes (flat shaded). Shared between every part of the same size.
+    static readonly Dictionary<string, Mesh> meshCache = new Dictionary<string, Mesh>();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetMeshes() => meshCache.Clear();
+
+    // A triangle seen from the front (x = width, y = height), thick along z. pointUp: the tip is at the top; otherwise at the bottom.
+    static Mesh TriPrism(float w, float h, float d, bool pointUp)
+    {
+        string key = "tri" + w + "," + h + "," + d + pointUp;
+        if (meshCache.TryGetValue(key, out Mesh cached) && cached != null) return cached;
+        float baseY = pointUp ? -h / 2f : h / 2f, tipY = pointUp ? h / 2f : -h / 2f;
+        Mesh m = Prism(new Vector3(-w / 2f, baseY, 0f), new Vector3(w / 2f, baseY, 0f), new Vector3(0f, tipY, 0f), new Vector3(0f, 0f, d));
+        meshCache[key] = m;
+        return m;
+    }
+
+    // A thin triangle lying on the floor, tip pointing forward (+z). radius = distance from the centre to a corner.
+    static Mesh FlatTriangle(float radius)
+    {
+        string key = "flat" + radius;
+        if (meshCache.TryGetValue(key, out Mesh cached) && cached != null) return cached;
+        Mesh m = Prism(new Vector3(0f, 0f, radius), new Vector3(radius * 0.866f, 0f, -radius * 0.5f), new Vector3(-radius * 0.866f, 0f, -radius * 0.5f), new Vector3(0f, 1f, 0f));
+        meshCache[key] = m;
+        return m;
+    }
+
+    // Any triangle (a, b, c) pushed out along ext: five faces, each with its own flat normal facing outwards.
+    static Mesh Prism(Vector3 a, Vector3 b, Vector3 c, Vector3 ext)
+    {
+        Vector3 o = ext * 0.5f, e = ext.normalized, centre = (a + b + c) / 3f;
+        var v = new List<Vector3>(); var n = new List<Vector3>(); var t = new List<int>();
+
+        void Tri(Vector3 p, Vector3 q, Vector3 r, Vector3 outward)
+        {
+            if (Vector3.Dot(Vector3.Cross(q - p, r - p), outward) < 0f) { Vector3 tmp = q; q = r; r = tmp; }    // wind it so the face looks outwards
+            Vector3 nn = Vector3.Cross(q - p, r - p).normalized;
+            int i = v.Count;
+            v.Add(p); v.Add(q); v.Add(r); n.Add(nn); n.Add(nn); n.Add(nn);
+            t.Add(i); t.Add(i + 1); t.Add(i + 2);
+        }
+
+        Tri(a + o, b + o, c + o, e);
+        Tri(a - o, b - o, c - o, -e);
+        Vector3[] corner = { a, b, c };
+        for (int i = 0; i < 3; i++)
+        {
+            Vector3 p = corner[i], q = corner[(i + 1) % 3];
+            Vector3 outward = (p + q) / 2f - centre;
+            outward -= Vector3.Project(outward, e);
+            Tri(p - o, q - o, q + o, outward);
+            Tri(p - o, q + o, p + o, outward);
+        }
+        Mesh m = new Mesh { name = "Prism" };
+        m.SetVertices(v); m.SetNormals(n); m.SetTriangles(t, 0);
+        m.RecalculateBounds();
+        return m;
     }
 
     Transform MakeArm(Shader hostile, Vector3 shoulder)
@@ -443,15 +688,22 @@ public class ProfessorAI : MonoBehaviour
         switch (Current)
         {
             case State.TelegraphMelee:
-                rTarget = Mathf.Lerp(8f, -165f, Mathf.SmoothStep(0f, 1f, t / meleeTelegraph));   // pointer goes up over the head
+                rTarget = Mathf.Lerp(8f, raiseRight, Mathf.SmoothStep(0f, 1f, t / meleeTelegraph));   // pointer goes up over the head
                 speed = 20f; redPointer = true;
                 break;
             case State.Swing:
                 rTarget = -80f; speed = 60f; redPointer = true;                                   // and down, fast
                 break;
             case State.TelegraphChalk:
-                lTarget = Mathf.Lerp(4f, -150f, Mathf.SmoothStep(0f, 1f, t / chalkTelegraph));
+            case State.TelegraphVolley:
+                lTarget = Mathf.Lerp(4f, raiseLeft, Mathf.SmoothStep(0f, 1f, t / chalkTelegraph));
                 speed = 20f; redChalk = true;
+                break;
+            case State.TelegraphLunge:
+                rTarget = raiseRight; lTarget = raiseLeft; speed = 18f; redPointer = true;        // both arms up, like winding up a jump
+                break;
+            case State.Lunge:
+                rTarget = 80f; lTarget = 80f; speed = 40f; redPointer = true;                    // both arms swept back behind him as he flies
                 break;
             case State.Recover:
                 rTarget = 25f; lTarget = 20f;
@@ -463,6 +715,8 @@ public class ProfessorAI : MonoBehaviour
             case State.Dead:
                 break;
         }
+        slouch = Mathf.MoveTowards(slouch, slouching ? 1f : 0f, Time.deltaTime / 1.1f);
+        if (slouch > 0f) { rTarget = Mathf.Lerp(rTarget, 10f, slouch); lTarget = Mathf.Lerp(lTarget, 14f, slouch); speed = Mathf.Lerp(speed, 4f, slouch); }
         rightAngle = Mathf.LerpAngle(rightAngle, rTarget, speed * Time.deltaTime);
         leftAngle = Mathf.LerpAngle(leftAngle, lTarget, speed * Time.deltaTime);
         rightArm.localRotation = Quaternion.Euler(rightAngle, 0f, 0f);
@@ -470,9 +724,14 @@ public class ProfessorAI : MonoBehaviour
 
         // head tilts when stunned, and a little bob when he is idle
         float tilt = Current == State.Stunned ? 22f * Mathf.Sin(Time.time * 6f) : 0f;
-        head.localRotation = Quaternion.Euler(0f, 0f, tilt);
-        float bob = Current == State.Idle || Current == State.Chase ? Mathf.Sin(Time.time * 3f) * 0.012f : 0f;
-        body.localPosition = new Vector3(0f, bob, 0f);
+        head.localRotation = Quaternion.Euler(58f * slouch, 0f, tilt + 14f * slouch);
+        float bob = Current == State.Idle || Current == State.Chase ? Mathf.Sin(Time.time * 3f) * bobAmount : 0f;
+        body.localPosition = new Vector3(0f, bob + hoverHeight - 0.5f * slouch, 0f);
+        if (Current != State.Dead) body.localRotation = Quaternion.Euler(26f * slouch, 0f, 0f);
+        // a new form swells up from a smaller size, overshooting a little (SetForm)
+        float swell = Mathf.Clamp01((Time.time - formChangedAt) / 0.9f);
+        float grow = swell >= 1f ? 1f : Mathf.Lerp(0.55f, 1f, 1f - Mathf.Pow(1f - swell, 3f)) + 0.12f * Mathf.Sin(swell * Mathf.PI);
+        body.localScale = Vector3.one * grow;
 
         // falls over when defeated
         if (Current == State.Dead)
@@ -495,7 +754,7 @@ public class ProfessorAI : MonoBehaviour
         {
             flashing = false;                                 // flash over: back to his normal (or stunned yellow) colours
             SetFlash(false);
-            if (Current == State.Stunned) SetTint(new Color(1f, 0.9f, 0.3f)); else SetTint(null);
+            if (Current == State.Stunned) SetTint(new Color(1f, 0.9f, 0.3f)); else if (slouching) SetTint(new Color(0.25f, 0.25f, 0.3f)); else SetTint(null);
         }
 
         // hologram life: spinning mortarboard, orbiting shards, pulsing projector disc, flickering light
@@ -505,12 +764,12 @@ public class ProfessorAI : MonoBehaviour
             for (int i = 0; i < shards.Length; i++)
             {
                 float a = Time.time * 1.4f + i * Mathf.PI * 0.5f;
-                shards[i].localPosition = new Vector3(Mathf.Cos(a) * 0.62f, 1.25f + 0.35f * Mathf.Sin(a * 1.7f + i), Mathf.Sin(a) * 0.62f);
+                shards[i].localPosition = new Vector3(Mathf.Cos(a) * shardRadius, shardHeight + 0.35f * Mathf.Sin(a * 1.7f + i), Mathf.Sin(a) * shardRadius);
                 shards[i].localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 20f * i);
                 shards[i].gameObject.SetActive(!dead);
             }
         if (disc != null) disc.localScale = new Vector3(0.9f + 0.08f * Mathf.Sin(Time.time * 4f), 0.01f, 0.9f + 0.08f * Mathf.Sin(Time.time * 4f));
-        if (glow != null) glow.intensity = dead ? 0f : (UnityEngine.Random.value < 0.06f ? 0.4f : 1.4f) + (redPointer || redChalk ? 0.8f * pulse : 0f);
+        if (glow != null) glow.intensity = dead ? 0f : (1f - 0.85f * slouch) * (UnityEngine.Random.value < 0.06f ? 0.4f : glowBase) + (redPointer || redChalk ? 0.8f * pulse : 0f);
     }
 
     bool flashing;

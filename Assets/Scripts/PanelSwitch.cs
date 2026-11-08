@@ -43,7 +43,7 @@ public class PanelSwitch : Interactable
         mats = r.materials;
     }
 
-    public override string GetPrompt() => "Press E for Switch " + Number;
+    public override string GetPrompt() => Prompt("Switch " + Number);
 
     public override bool AcceptsClick => true;          // E or left click both press it (the prompt only mentions E: shorter on screen)
     public override bool CanInteract => panel != null && panel.Ready;
