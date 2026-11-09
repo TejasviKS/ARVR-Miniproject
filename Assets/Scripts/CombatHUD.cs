@@ -16,7 +16,7 @@ public class CombatHUD : MonoBehaviour
     public PlayerCombat player;
     public ProfessorAI enemy;
 
-    struct Pop { public string text; public Color colour; public float at; }
+    struct Pop { public string text; public Color colour; public float at; public bool outline; }
     readonly List<Pop> pops = new List<Pop>();
     string subtitle = "", subtitleWho = "";
     Color? subtitleNameColour;
@@ -49,10 +49,26 @@ public class CombatHUD : MonoBehaviour
     }
 
     // ---- what other scripts call
-    public static void Popup(string text, Color colour)
+    // outline = a thick dark edge around the letters, so a red word still reads against a red room (the boss's phase names)
+    public static void Popup(string text, Color colour, bool outline = false)
     {
         if (Instance == null) return;
-        Instance.pops.Add(new Pop { text = text, colour = colour, at = Time.time });
+        Instance.pops.Add(new Pop { text = text, colour = colour, at = Time.time, outline = outline });
+    }
+
+    static readonly Color OutlineColour = new Color(0.04f, 0f, 0.01f);
+    // the text with a dark edge: the same text drawn a few pixels away in 8 directions, then the real one on top
+    static void OutlinedText(Rect r, string s, GUIStyle st, Color c, float thickness)
+    {
+        Color edge = OutlineColour; edge.a = c.a;
+        for (int i = 0; i < 8; i++)
+        {
+            float a = i * Mathf.PI / 4f;
+            GUI.color = Color.white;
+            st.normal.textColor = edge;
+            GUI.Label(new Rect(r.x + Mathf.Cos(a) * thickness, r.y + Mathf.Sin(a) * thickness, r.width, r.height), s, st);
+        }
+        Text(r, s, st, c);
     }
     public static void Flash(Color colour, float strength)
     {
@@ -62,6 +78,8 @@ public class CombatHUD : MonoBehaviour
     // seconds = how long it stays AFTER it has been typed out. Left out, it depends on the length of the line (ProfessorAI.ReadSeconds).
     public static void Say(string who, string line, float seconds = -1f, Color? nameColour = null)
     {
+        // whoever speaks (you, GPT, Claude...), the music dips for as long as the subtitle is up
+        MusicDirector.DuckFor(line.Length / ProfessorAI.LettersPerSecond + (seconds < 0f ? ProfessorAI.ReadSeconds(line) : seconds) + 0.2f);
         if (Instance == null) return;
         Instance.subtitleNameColour = nameColour;                                    // null = the opponent's bar colour
         if (seconds < 0f) seconds = ProfessorAI.ReadSeconds(line);
@@ -174,7 +192,8 @@ public class CombatHUD : MonoBehaviour
             if (!string.IsNullOrEmpty(enemy.barTag))
             {
                 GUIStyle left = new GUIStyle(smallStyle) { alignment = TextAnchor.MiddleLeft };
-                Text(new Rect(r.x, r.yMax + 2f, w * 0.5f, 22f), enemy.barTag.ToUpper(), left, Color.Lerp(enemy.healthBarColour, Color.white, 0.5f));
+                Color tagColour = enemy.barTagColour.a > 0f ? enemy.barTagColour : Color.Lerp(enemy.healthBarColour, Color.white, 0.5f);       // (the boss's phases get redder and redder)
+                OutlinedText(new Rect(r.x, r.yMax + 2f, w * 0.5f, 22f), enemy.barTag.ToUpper(), left, tagColour, 1.6f);       // (with a dark edge, so the deep red Fable still reads)
             }
             if (enemy.IsStunned) Text(new Rect(r.x, r.yMax + 2f, w, 22f), "STUNNED: DOUBLE DAMAGE", smallStyle, new Color(1f, 0.9f, 0.3f));
         }
@@ -240,7 +259,8 @@ public class CombatHUD : MonoBehaviour
             float age = Time.time - pops[i].at;
             if (age > 0.9f) { pops.RemoveAt(i); continue; }
             Color c = pops[i].colour; c.a = 1f - Mathf.Clamp01((age - 0.5f) / 0.4f);
-            Text(new Rect(0f, Screen.height * 0.3f - age * 40f, Screen.width, 60f), pops[i].text, popStyle, c);
+            Rect pr = new Rect(0f, Screen.height * 0.3f - age * 40f, Screen.width, 60f);
+            if (pops[i].outline) OutlinedText(pr, pops[i].text, popStyle, c, 3f); else Text(pr, pops[i].text, popStyle, c);
         }
 
         // charging a heavy swing

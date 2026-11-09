@@ -39,8 +39,6 @@ public class PlayerController : MonoBehaviour
         Debug.Log("[Scripts] PlayerController v8 running");
     }
 
-    void Start() => LockCursor(true);
-
     // Runs at the start AND every time walking is switched back on (e.g. after standing up from a seat).
     // Re-syncs body + camera so the view and WASD always line up.
     void OnEnable()
@@ -65,9 +63,7 @@ public class PlayerController : MonoBehaviour
         var mouse = Mouse.current;
         if (kb == null || mouse == null) return;
 
-        // Esc frees the mouse, clicking the game window grabs it again
-        if (kb.escapeKey.wasPressedThisFrame) LockCursor(false);
-        if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked) LockCursor(true);
+        // (the mouse is captured and freed by GameCursor; Esc opens the pause menu: PauseMenu)
 
         // ---- Look around ----
         if (Cursor.lockState == CursorLockMode.Locked && !lookLocked)
@@ -97,9 +93,4 @@ public class PlayerController : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
-    void LockCursor(bool locked)
-    {
-        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !locked;
-    }
 }

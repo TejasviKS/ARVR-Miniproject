@@ -64,6 +64,10 @@ public class PlayerCombat : MonoBehaviour
     Camera cam;
     float blockStart, chargeStart, busyUntil, dashReadyAt, invulnUntil;
     bool cursorWasLocked;
+    // input handling (see Update): held buttons and recent taps wait for the cooldown instead of being lost
+    const float InputBuffer = 0.25f;                       // a tap this long before an action is allowed still counts
+    bool leftArmed, rightArmed;
+    float leftBufferUntil = -10f, dashBufferUntil = -10f;
 
     // ---- the book in your hand
     Transform vm;
@@ -99,13 +103,29 @@ public class PlayerCombat : MonoBehaviour
         if (!InputEnabled || Health.Dead)
         {
             Blocking = false; Charging = false; Charge01 = 0f;
+            leftArmed = rightArmed = false; leftBufferUntil = dashBufferUntil = -10f;
             UpdateBook();
             return;
         }
         bool locked = cursorWasLocked;           // the click that grabs the mouse back must not also be an attack
 
-        // block
-        if (locked && mouse.rightButton.wasPressedThisFrame && !Charging && Time.time >= busyUntil)
+        // ---- reading the buttons ----
+        // A press is not thrown away just because the action is not allowed yet (still in its cooldown, busy charging, ...):
+        //  - a button that is still HELD ("armed", from a press made while the mouse was captured) starts its action the moment it is allowed
+        //  - a quick TAP made a moment before that (within InputBuffer seconds) also counts, for the attack and the dodge
+        // So you never have to let go and press again: hold it, or press a little early, and it happens as soon as the cooldown ends.
+        if (locked)
+        {
+            if (mouse.rightButton.wasPressedThisFrame) rightArmed = true;
+            if (mouse.leftButton.wasPressedThisFrame) { leftArmed = true; leftBufferUntil = Time.time + InputBuffer; }
+            if (kb.spaceKey.wasPressedThisFrame) dashBufferUntil = Time.time + InputBuffer;
+        }
+        if (!mouse.rightButton.isPressed) rightArmed = false;
+        if (!mouse.leftButton.isPressed) leftArmed = false;
+        bool canAct = Time.time >= busyUntil;
+
+        // block (hold RIGHT button). The perfect-block window counts from the moment the block really starts.
+        if (locked && !Blocking && !Charging && canAct && rightArmed)
         {
             Blocking = true;
             blockStart = Time.time;
@@ -115,10 +135,11 @@ public class PlayerCombat : MonoBehaviour
         // attack: press to start charging, let go to swing (a quick tap = light swing, a long hold = heavy)
         if (!Blocking && locked)
         {
-            if (mouse.leftButton.wasPressedThisFrame && Time.time >= busyUntil && !Charging)
+            if (!Charging && canAct && (leftArmed || Time.time <= leftBufferUntil))
             {
                 Charging = true;
                 chargeStart = Time.time;
+                leftBufferUntil = -10f;                                   // (that tap is used up)
             }
         }
         if (Charging)
@@ -133,7 +154,11 @@ public class PlayerCombat : MonoBehaviour
         }
 
         // dodge
-        if (locked && kb.spaceKey.wasPressedThisFrame && Time.time >= dashReadyAt) StartCoroutine(Dash(kb));
+        if (locked && Time.time >= dashReadyAt && Time.time <= dashBufferUntil)
+        {
+            dashBufferUntil = -10f;
+            StartCoroutine(Dash(kb));
+        }
 
         UpdateBook();
     }
@@ -237,6 +262,7 @@ public class PlayerCombat : MonoBehaviour
     {
         Blocking = false; Charging = false; Charge01 = 0f;
         busyUntil = 0f; invulnUntil = 0f; dashReadyAt = 0f;
+        leftArmed = rightArmed = false; leftBufferUntil = dashBufferUntil = -10f;
     }
 
     // ================================================================ the book in your hand

@@ -15,7 +15,9 @@ public static class CombatSfx
     public static void Play(Clip c, Vector3 at, float volume = 1f)
     {
         AudioClip clip = Get(c);
-        if (clip != null) AudioSource.PlayClipAtPoint(clip, at, volume);
+        // block, perfect block and stun play at 20% of their original volume, every other effect at 30%
+        volume *= (c == Clip.Block || c == Clip.Parry || c == Clip.Stun) ? 0.2f : 0.3f;
+        if (clip != null) AudioSource.PlayClipAtPoint(clip, at, volume);            // (sound effects never dip the music)
     }
 
     static AudioClip Get(Clip c)

@@ -155,6 +155,7 @@ public class TutorialDirector : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.IsPaused) return;
         float dt = Time.deltaTime;
         Keyboard kb = Keyboard.current;
         Mouse mouse = Mouse.current;
@@ -333,7 +334,10 @@ public class TutorialDirector : MonoBehaviour
         objectiveStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
         distStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
         noteTitleStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Italic, alignment = TextAnchor.MiddleCenter };
-        noteStyle = new GUIStyle(GUI.skin.label) { fontSize = 34, fontStyle = FontStyle.Italic, alignment = TextAnchor.MiddleCenter, wordWrap = true };
+        // only the handwritten part of the note is in Comic Sans (not the "a note, stuck to..." line or "[E] Continue")
+        Font handwriting = Resources.Load<Font>("Fonts/ComicSans");
+        noteStyle = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = handwriting != null ? FontStyle.Normal : FontStyle.Italic, alignment = TextAnchor.MiddleCenter, wordWrap = true };
+        if (handwriting != null) noteStyle.font = handwriting;
     }
 
     static void Round(Rect r, Color c, float radius)

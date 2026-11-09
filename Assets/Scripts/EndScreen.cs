@@ -34,8 +34,7 @@ public class EndScreen : MonoBehaviour
         if (pc != null) pc.enabled = false;
         PlayerInteractor pi = FindAnyObjectByType<PlayerInteractor>();
         if (pi != null) pi.enabled = false;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        GameCursor.Request(this);
     }
 
     void OnGUI()

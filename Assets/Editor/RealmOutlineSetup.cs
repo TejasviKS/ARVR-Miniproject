@@ -61,7 +61,7 @@ public static class RealmOutlineSetup
             feature.passMaterial = mat;
             feature.passIndex = 0;
             feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingTransparents;
-            feature.fetchColorBuffer = false;                 // the pass paints over the scene, it doesn't need it
+            feature.fetchColorBuffer = true;                  // (the pass paints a flat look over the scene; the scene's real colours are only needed for the colour wave when the boss is defeated)
             feature.bindDepthStencilAttachment = false;
             feature.requirements = ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal;
             feature.SetActive(false);                         // RealmStyle switches it on only inside a realm

@@ -482,9 +482,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02d48e2544ddeeb45a713149f57f594a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RealmStyle
-  fillColor: {r: 0.89, g: 0.31, b: 0.35, a: 1}
-  lineColor: {r: 0.17, g: 0.06, b: 0.16, a: 1}
-  voidColor: {r: 0.17, g: 0.06, b: 0.16, a: 1}
+  fillColor: {r: 0.949, g: 0.541, b: 0.188, a: 1}
+  lineColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
+  voidColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
   lineThickness: 4
   depthThreshold: 0.04
   creaseThreshold: 0.5
@@ -993,6 +993,7 @@ MonoBehaviour:
   max: 100
   minFraction: 0
   invulnerable: 0
+  startAt: 0
 --- !u!1 &1433771429
 GameObject:
   m_ObjectHideFlags: 0
@@ -1025,6 +1026,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProfessorAI
   displayName: Asst. Prof. GPT
+  healthBarWidth: 300
+  healthBarColour: {r: 0.58, g: 0.27, b: 0.92, a: 1}
+  bodyColour: {r: 1, g: 0.22, b: 0.62, a: 1}
+  bodyStyle: 0
+  brainPaused: 0
+  barScreenFraction: 0
+  barNotches: []
+  barTag: 
+  barTagColour: {r: 0, g: 0, b: 0, a: 0}
+  uninterruptible: 0
   aggressive: 0
   useMelee: 1
   useChalk: 1
@@ -1055,6 +1066,7 @@ MonoBehaviour:
   max: 120
   minFraction: 0
   invulnerable: 0
+  startAt: 0
 --- !u!143 &1433771432
 CharacterController:
   m_ObjectHideFlags: 0

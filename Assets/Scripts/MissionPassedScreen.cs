@@ -38,8 +38,8 @@ public class MissionPassedScreen : MonoBehaviour
     void Start()
     {
         startedAt = Time.unscaledTime;
-        Cursor.lockState = CursorLockMode.None;           // the button needs the mouse
-        Cursor.visible = true;
+        MusicDirector.Silence(0.3f);                      // only the "mission passed" tune plays
+        GameCursor.Request(this);                         // the button needs the mouse
 
         // the player stops: no walking, no looking, no "Press E"
         PlayerController pc = FindAnyObjectByType<PlayerController>();
@@ -61,6 +61,7 @@ public class MissionPassedScreen : MonoBehaviour
 
     void OnDestroy()
     {
+        GameCursor.Release(this);
         if (picture != null) { picture.Release(); Destroy(picture); }
         if (dimMat != null) Destroy(dimMat);
         if (current == this) current = null;
@@ -84,17 +85,12 @@ public class MissionPassedScreen : MonoBehaviour
         cam.targetTexture = old;
     }
 
-    // for now the "main menu" does not exist yet: it ends the game
+    // back to the main menu
     void MainMenu()
     {
         if (finished) return;
         finished = true;
-        Debug.Log("[MissionPassedScreen] Main Menu pressed: quitting (the main menu is not made yet).");
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 
     void OnGUI()

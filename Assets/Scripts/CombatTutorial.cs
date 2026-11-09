@@ -129,7 +129,7 @@ public class CombatTutorial : MonoBehaviour
         PlayerController pc = player != null ? player.GetComponent<PlayerController>() : null;
         if (pc != null) { pc.movementLocked = true; pc.lookLocked = true; }
         yield return new WaitForSeconds(3.5f);                    // let the player read the tutorial box first
-        const float pause = 0.4f;                                  // a short beat between two lines
+        const float pause = 0.2f;                                  // a short beat between two lines
         string line = "Ah. There you are.";
         professor.Say(line);
         yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + pause);
@@ -140,8 +140,7 @@ public class CombatTutorial : MonoBehaviour
         professor.Say(line);
         yield return new WaitForSeconds(ProfessorAI.LineSeconds(line));
         if (pc != null) { pc.movementLocked = false; pc.lookLocked = false; }
-        introLinesDone = true;
-    }
+        introLinesDone = true;    }
     bool introLinesDone;
 
     void Complete()
@@ -227,6 +226,7 @@ public class CombatTutorial : MonoBehaviour
         step = Step.Done;
         done = false;
         professor.Say("My... attendance... records...");
+        MusicDirector.Silence(2.2f);                                // the music fades out as he falls
         StartCoroutine(Victory());
     }
 

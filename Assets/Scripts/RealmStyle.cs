@@ -123,13 +123,35 @@ public class RealmStyle : MonoBehaviour
         }
         else
         {
+            Shader.SetGlobalVector("_RealmReveal", Vector4.zero);                      // (no colour wave is left over)
             if (camData != null) { camData.renderPostProcessing = hadPostProcessing; camData = null; }
             Debug.Log("[Scripts] RealmStyle v1: realm look OFF", this);
         }
     }
 
+    // ---- the real colours spreading out from a point (used when the boss is defeated; see BossFight). Call Reveal; it grows by itself.
+    Vector3 revealCentre; float revealStart = -1f, revealDuration = 1f, revealMax = 0f, revealPower = 1f;
+    public bool RevealDone => revealStart >= 0f && Time.unscaledTime - revealStart >= revealDuration;
+
+    // The wave starts at "from" and reaches maxRadius exactly when "seconds" are up (RevealDone). accelerate = 1: steady speed;
+    // 2: it starts slowly and gets faster and faster (the radius grows with the square of the time).
+    public void Reveal(Vector3 from, float seconds, float maxRadius, float accelerate = 1f)
+    {
+        revealCentre = from; revealDuration = Mathf.Max(0.1f, seconds); revealMax = maxRadius; revealPower = Mathf.Max(1f, accelerate); revealStart = Time.unscaledTime;
+    }
+
+    float RevealRadius()
+    {
+        if (revealStart < 0f) return 0f;
+        float k = Mathf.Clamp01((Time.unscaledTime - revealStart) / revealDuration);
+        return Mathf.Max(0.001f, revealMax * Mathf.Pow(k, revealPower));
+    }
+
     void SetShaderValues()
     {
+        float rr = RevealRadius();
+        Shader.SetGlobalVector("_RealmReveal", new Vector4(revealCentre.x, revealCentre.y, revealCentre.z, rr));
+        Shader.SetGlobalVector("_RealmRevealEdge", new Vector4(1f, 0.93f, 0.6f, 0.45f));       // a warm light rim, 45 cm wide
         // .linear: the Inspector colour is what you see in the colour picker; the shader needs it in linear space
         Shader.SetGlobalVector("_RealmFill", fillColor.linear);
         Shader.SetGlobalVector("_RealmLine", lineColor.linear);

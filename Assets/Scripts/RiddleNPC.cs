@@ -241,6 +241,7 @@ public class RiddleNPC : Interactable
         while (shown < text.Length)
         {
             if (continuePressed) { continuePressed = false; break; }   // pressed early: show the whole line
+            MusicDirector.DuckFor(0.4f);
             letters += Time.deltaTime * lettersPerSecond;
             while (shown < text.Length && shown < (int)letters)
             {
@@ -255,7 +256,7 @@ public class RiddleNPC : Interactable
 
         mode = Mode.WaitingForContinue;
         continuePressed = false;
-        while (!continuePressed) yield return null;
+        while (!continuePressed) { MusicDirector.DuckFor(0.4f); yield return null; }
         continuePressed = false;
     }
 
@@ -274,7 +275,7 @@ public class RiddleNPC : Interactable
         chosen = -1;
         mode = Mode.Choosing;
         SetCursorFree(true);                      // so the buttons can be clicked
-        while (chosen < 0) yield return null;
+        while (chosen < 0) { MusicDirector.DuckFor(0.4f); yield return null; }       // (the music stays low while he talks and while you answer)
         SetCursorFree(false);
         ignoreInputUntil = Time.time + 0.25f;     // the click on the button shouldn't also skip the next line
     }
@@ -330,15 +331,16 @@ public class RiddleNPC : Interactable
         return n >= 0 && n < words.Length ? words[n] : n.ToString();
     }
 
+    // the answer buttons need the mouse arrow: GameCursor frees the mouse while this request is open and captures it again after
     static void SetCursorFree(bool free)
     {
-        Cursor.lockState = free ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = free;
+        if (free) GameCursor.Request("RiddleNPC"); else GameCursor.Release("RiddleNPC");
     }
 
     // ================= Every frame =================
     void Update()
     {
+        if (PauseMenu.IsPaused) return;                         // (Space / 1 / 2 / 3 do nothing while the pause menu is up)
         // ---- Keys while talking ----
         var kb = Keyboard.current;
         var mouse = Mouse.current;

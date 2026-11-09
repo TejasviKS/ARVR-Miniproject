@@ -34,11 +34,15 @@ public class ProfessorAI : MonoBehaviour
     [Header("For the boss fight (BossFight.cs switches these; leave them alone in the tutorial)")]
     [Tooltip("ON = his own decisions are paused: he still faces you, gets stunned, and can be hit, but starts no attack by himself")]
     public bool brainPaused;
+    [Tooltip("ON = a few seconds after he is beaten his object switches itself off (GPT). The boss stays lying there: his director script lives on the same object and still has the ending to play.")]
+    public bool hideWhenDead = true;
     [Tooltip("0 = the bar is Health Bar Width wide. Above 0 = the bar takes this share of the SCREEN width (0.7 = 70%), whatever the screen size")]
     [Range(0f, 0.95f)] public float barScreenFraction = 0f;
     [Tooltip("Positions (0..1) of the notches drawn on his health bar, and the small tag under it (the phase name)")]
     public float[] barNotches;
     public string barTag = "";
+    [Tooltip("Colour of that tag. Clear (alpha 0) = a light version of the bar colour")]
+    public Color barTagColour = Color.clear;
     [Tooltip("ON = a heavy hit does not break his wind-up (the boss's blink strike)")]
     public bool uninterruptible;
 
@@ -124,9 +128,10 @@ public class ProfessorAI : MonoBehaviour
     // What he says: shown as a subtitle (typed out letter by letter) and spoken with the same little blips as Lab Asst. Gemini
     public const float LettersPerSecond = 40f;
 
-    // How long a line should stay on screen, by its length (the usual subtitle rule of thumb: about 16 characters a second to read,
-    // at least 1.6 s even for a very short line). The time to TYPE it out (LettersPerSecond) comes on top of that.
-    public static float ReadSeconds(string line) => Mathf.Max(1.6f, 0.7f + (line != null ? line.Length : 0) / 16f);
+    // How long a line stays on screen AFTER it has been typed out, by its length: a short fixed pause plus a little per letter, at least 1 s.
+    // (You read it while it types, so this is only the time to finish reading; it used to be 0.7 s + length / 16, about 45% longer.)
+    // The time to TYPE it out (LettersPerSecond) comes on top of that.
+    public static float ReadSeconds(string line) => Mathf.Max(1.0f, 0.4f + (line != null ? line.Length : 0) / 30f);
     // typing + reading: how long until the line is over. Wait this (plus a short pause between speakers) before the next line.
     public static float LineSeconds(string line) => (line != null ? line.Length : 0) / LettersPerSecond + ReadSeconds(line);
     AudioSource voice;
@@ -367,7 +372,7 @@ public class ProfessorAI : MonoBehaviour
     IEnumerator HideLater()
     {
         yield return new WaitForSeconds(3.5f);
-        if (Current == State.Dead) gameObject.SetActive(false);
+        if (Current == State.Dead && hideWhenDead) gameObject.SetActive(false);
     }
 
     // back to the start of the fight (the player was beaten and retries)
@@ -557,9 +562,9 @@ public class ProfessorAI : MonoBehaviour
             // it must stay heavy and readable against any room colour
             Material m = mr.material;
             m.SetColor("_CoreColor", new Color(0.02f, 0.0f, 0.02f));
-            m.SetFloat("_CoreAlpha", 0.95f);
-            m.SetFloat("_RimPower", 3.5f);
-            m.SetFloat("_Strength", 1.1f);
+            m.SetFloat("_CoreAlpha", 0.98f);                  // (a little more solid and a little brighter at the edges than before: more contrast with the room)
+            m.SetFloat("_RimPower", 3.0f);
+            m.SetFloat("_Strength", 1.5f);
             m.SetFloat("_Glitch", 0.35f);
         }
         parts.Add(mr);
@@ -653,6 +658,14 @@ public class ProfessorAI : MonoBehaviour
         MeshRenderer mr = go.GetComponent<MeshRenderer>();
         mr.sharedMaterial = new Material(shader) { color = colour };
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        if (shader.name == "Custom/HologramHostile")
+        {
+            // a bit darker, more solid and with a brighter edge than the shader's defaults, so he stands out from a flat-coloured room
+            Material m = mr.material;
+            m.SetColor("_CoreColor", new Color(0.05f, 0.01f, 0.10f));
+            m.SetFloat("_CoreAlpha", 0.88f);
+            m.SetFloat("_Strength", 1.6f);
+        }
         parts.Add(mr);
         baseColours.Add(colour);
         return mr;

@@ -32,6 +32,8 @@ Shader "Custom/RealmOutline"
             float4 _RealmLine;     // rgb = outline colour (already in linear space)
             float4 _RealmVoid;     // rgb = colour where nothing is drawn: open sky / empty space (linear)
             float4 _RealmParams;   // x = line thickness in pixels (at 1080p), y = depth threshold, z = crease threshold
+            float4 _RealmReveal;   // xyz = where the real colours spread out from (world), w = how far they have reached (0 = off)
+            float4 _RealmRevealEdge; // rgb = colour of the bright rim at the front of the spreading colours (linear), a = rim width in metres
 
             // 1 / eye-depth is a straight (affine) function across a flat surface on screen, so its
             // second difference is zero on flat walls/floors and only spikes at real edges.
@@ -86,7 +88,21 @@ Shader "Custom/RealmOutline"
                 float creaseLine = smoothstep(c0, c0 * 2.0, nsum);
 
                 float edge = saturate(max(depthLine, creaseLine));
-                return half4(lerp(_RealmFill.rgb, _RealmLine.rgb, edge), 1.0);
+                float3 result = lerp(_RealmFill.rgb, _RealmLine.rgb, edge);
+
+                // The world's real colours spreading out from a point (the defeated boss): inside the growing circle you see the scene as it
+                // really is (needs "Fetch Color Buffer" on the pass), with a bright rim at the front of the wave.
+                if (_RealmReveal.w > 0.0)
+                {
+                    float3 wp = ComputeWorldSpacePosition(uv, SampleSceneDepth(uv), UNITY_MATRIX_I_VP);
+                    float d = distance(wp, _RealmReveal.xyz);
+                    float inside = saturate((_RealmReveal.w - d) / 0.25);                       // a soft 25 cm edge
+                    float3 sceneCol = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv).rgb;       // ("real" is a type name in URP's shader library)
+                    result = lerp(result, sceneCol, inside);
+                    float rim = saturate(1.0 - abs(d - _RealmReveal.w) / max(_RealmRevealEdge.a, 0.01));
+                    result = lerp(result, _RealmRevealEdge.rgb, rim * rim);
+                }
+                return half4(result, 1.0);
             }
             ENDHLSL
         }

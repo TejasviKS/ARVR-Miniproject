@@ -10,15 +10,14 @@ public class CabinIntroDialogue : MonoBehaviour
 {
     [Tooltip("Seconds between arriving and the first line")]
     public float firstLineDelay = 1.0f;
-    [Tooltip("A short beat between two lines")]
-    public float pause = 0.4f;
+    const float pause = 0.2f;                                    // a short beat between two lines (a constant: a value saved in the scene could not override it)
 
     public bool Finished { get; private set; }
 
     static readonly string[] Lines =
     {
         "Oh no! My attendance is at 74%.",
-        "I need at least 75% to be eligible to write my exams.",
+        "I need at least 75% to write my exams.",
         "Man, it's been rough since the faculty got replaced by AI.",
         "There's no leniency at all.",
     };

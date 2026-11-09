@@ -181,7 +181,7 @@ public class BeepingComputerPuzzle : MonoBehaviour
         snd.transform.SetParent(transform, true);
         beepSource = snd.AddComponent<AudioSource>();
         beepSource.clip = beepClip;
-        beepSource.volume = beepVolume;
+        beepSource.volume = Mathf.Min(1f, beepVolume * 1.25f);       // a little louder than the slider value (and the level music is turned down while it beeps)
         beepSource.spatialBlend = 1f;                       // fully 3D: direction + distance
         beepSource.rolloffMode = AudioRolloffMode.Logarithmic;
         beepSource.minDistance = 1f;
@@ -281,6 +281,7 @@ public class BeepingComputerPuzzle : MonoBehaviour
 
     void Update()
     {
+        if (IsBeeping) MusicDirector.ListenFor(3f);          // the music drops so you can hear where the beeping comes from
         if (!IsBeeping || alarmMat == null || beepSource == null) return;
 
         if (obviousAlarm)

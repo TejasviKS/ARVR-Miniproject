@@ -38,13 +38,13 @@ public class WastedScreen : MonoBehaviour
         current = go.AddComponent<WastedScreen>();
         current.onTryAgain = tryAgain;
         current.title = text;
+        MusicDirector.Defeat();                           // the music drops away
     }
 
     void Start()
     {
         startedAt = Time.unscaledTime;
-        Cursor.lockState = CursorLockMode.None;           // the button needs the mouse
-        Cursor.visible = true;
+        GameCursor.Request(this);                         // the button needs the mouse
 
         // the picture: the player's camera is drawn into a texture every frame, which we show in black and white
         PlayerController pc = FindAnyObjectByType<PlayerController>();
@@ -64,6 +64,7 @@ public class WastedScreen : MonoBehaviour
 
     void OnDestroy()
     {
+        GameCursor.Release(this);
         Time.timeScale = 1f;
         if (picture != null) { picture.Release(); Destroy(picture); }
         if (greyMat != null) Destroy(greyMat);
@@ -95,9 +96,9 @@ public class WastedScreen : MonoBehaviour
         if (finished) return;
         finished = true;
         Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        GameCursor.Release(this);                         // the mouse is captured again
         if (audioSrc != null) audioSrc.Stop();
+        MusicDirector.ResumeAfterCut(1.5f);               // the music comes back (a fight can choose its own track right after, in onTryAgain)
         onTryAgain?.Invoke();
         Destroy(gameObject, 0.05f);
     }

@@ -40,6 +40,7 @@ public class PortalTransition : MonoBehaviour
     {
         busy = true;
         Hold(player, true);
+        MusicDirector.Whoosh();                             // a short whoosh, and the music dips a little (it keeps playing)
 
         if (!string.IsNullOrEmpty(sceneToLoad))
         {

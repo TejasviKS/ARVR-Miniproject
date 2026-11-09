@@ -39,6 +39,7 @@ public class PlayerInteractor : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null || cam == null) return;
         if (WastedScreen.IsShowing || MissionPassedScreen.IsShowing) { Focused = null; return; }       // the defeat screen is up: nothing else may react (or re-enable walking)
+        if (PauseMenu.IsPaused) return;                                                                // the pause menu is up: no E, no R
 
         // EMERGENCY RESET: press R if anything gets stuck (instantly stand up, walking back on).
         // In scenes that have a PlayerSpawn (the cabins) it also puts you back where you started.

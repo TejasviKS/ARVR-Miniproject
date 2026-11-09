@@ -14,8 +14,8 @@ using UnityEngine.InputSystem;
 //   - difficulty (BossDifficulty.cs): every time and every damage here is multiplied/divided by it.
 //
 // THE LETTER (a trick): when he drops to 10% in Opus, a player who picked up the Letter of Recommendation in the classroom gets the prompt
-// "[E] Present Letter of Recommendation". Using it is a FAKE-OUT: he slouches, his bar drains to 0 and the "mission passed" music plays... then
-// it cuts off, he straightens up, transforms into his full form and heals to 20%: the secret fourth phase, FABLE.
+// "[E] Present Letter of Recommendation". Using it is a FAKE-OUT: he slouches, his bar drains to 0 and the fight music fades out into
+// silence... then he straightens up (the intense Fable music snaps on), transforms into his full form and heals to 20%: the secret fourth phase, FABLE.
 // Ignoring the prompt just continues the fight; at 0% he is really beaten.
 //
 // BUILT SO FAR (Phases Built = 4):
@@ -47,6 +47,22 @@ public class BossFight : MonoBehaviour
         new PhaseDef { name = "Fable",  startsAt = 0.00f, tempo = 1.3f, line = "And every fable has a twist." },
     };
     const int Haiku = 0, Sonnet = 1, Opus = 2, Fable = 3;
+    // Each phase is redder than the one before: the small tag under his health bar, and the big word that rises up the screen when the phase starts.
+    // (Haiku keeps the original look; Fable is a deep red.)
+    static readonly Color[] TagColours =
+    {
+        new Color(1.00f, 0.775f, 0.65f),      // Haiku: as it always was
+        new Color(1.00f, 0.60f, 0.48f),       // Sonnet
+        new Color(1.00f, 0.40f, 0.33f),       // Opus
+        new Color(0.85f, 0.10f, 0.10f),       // Fable
+    };
+    static readonly Color[] PopupColours =
+    {
+        new Color(1.00f, 0.70f, 0.40f),       // Haiku (no popup of its own)
+        new Color(1.00f, 0.60f, 0.38f),       // Sonnet
+        new Color(1.00f, 0.38f, 0.28f),       // Opus
+        new Color(0.88f, 0.08f, 0.08f),       // Fable
+    };
     const float LetterAt = 0.10f, LetterOfferTime = 7f, FableHealth = 0.20f;
     const string LetterItem = "letter_of_recommendation";
     const float ZeroWindup = 2.5f, ZeroDamage = 35f, ZeroCooldown = 24f, ZeroStun = 5f;
@@ -74,7 +90,6 @@ public class BossFight : MonoBehaviour
     bool offered, offerActive, letterPressed, playerLocked;
     float offerEndsAt;
     Coroutine cutscene;
-    AudioSource music;
     RealmStyle realm;
     Color realmFill, realmLine, realmVoid;
     bool savedPlayerInvulnerable;
@@ -91,6 +106,7 @@ public class BossFight : MonoBehaviour
         if (boss == null || player == null) { Debug.LogError("[BossFight] Needs a ProfessorAI (the boss) and a PlayerCombat (the player) in the scene.", this); enabled = false; return; }
 
         boss.displayName = "Prof. Claude";
+        boss.hideWhenDead = false;                                    // (he stays lying there while the room's colours come back)
         boss.barScreenFraction = 0.7f;                                // a very wide boss bar: 70% of the screen, at any resolution
         boss.barNotches = NotchesBuilt();
         boss.Health.Configure(baseHealth * BossDifficulty.HpMultiplier, 0f);
@@ -102,10 +118,7 @@ public class BossFight : MonoBehaviour
         player.Health.Died += OnPlayerBeaten;
         MeasureArena();
 
-        // for the Letter fake-out: the "mission passed" music (it gets cut off) and the room's colours (they drain to grey and come back)
-        music = gameObject.AddComponent<AudioSource>();
-        music.spatialBlend = 0f; music.ignoreListenerPause = true; music.playOnAwake = false;
-        music.clip = Resources.Load<AudioClip>("Audio/mission_passed");
+        // for the Letter fake-out: the room's colours (they drain to grey and come back)
         realm = FindAnyObjectByType<RealmStyle>();
         if (realm != null) { realmFill = realm.fillColor; realmLine = realm.lineColor; realmVoid = realm.voidColor; }
 
@@ -176,6 +189,7 @@ public class BossFight : MonoBehaviour
         boss.stunTime = 3f;
         boss.uninterruptible = false;
         boss.barTag = Phases[phase].name;
+        boss.barTagColour = TagColours[Mathf.Clamp(phase, 0, TagColours.Length - 1)];
     }
 
     // ---------------------------------------------------------------- intro
@@ -196,13 +210,12 @@ public class BossFight : MonoBehaviour
         for (int i = 0; i < speech.Length; i++)
         {
             boss.Say(speech[i]);
-            yield return new WaitForSeconds(ProfessorAI.LineSeconds(speech[i]) + (i < speech.Length - 1 ? 0.4f : 0.3f));
+            yield return new WaitForSeconds(ProfessorAI.LineSeconds(speech[i]) + (i < speech.Length - 1 ? 0.2f : 0.15f));
         }
         // the fight starts: your attendance bar fades in quickly and you can move
         boss.Health.invulnerable = false;
         LockForIntro(false);
-        BeginFighting(0.5f);
-    }
+        BeginFighting(0.5f);    }
 
     void LockForIntro(bool locked)
     {
@@ -231,6 +244,7 @@ public class BossFight : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.IsPaused) return;
         // the Letter prompt: E while it is on screen
         if (offerActive && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) letterPressed = true;
 
@@ -286,7 +300,6 @@ public class BossFight : MonoBehaviour
             // the Letter offer or the fake-out was going on: put everything back
             if (cutscene != null) { StopCoroutine(cutscene); cutscene = null; }
             offerActive = false;
-            if (music != null) music.Stop();
             RestoreRealm();
             UnlockPlayer();
             boss.SetSlouch(false);
@@ -689,7 +702,7 @@ public class BossFight : MonoBehaviour
         boss.SetState(ProfessorAI.State.Recover, 2.4f);
         if (Phases[phase].name == "Fable") boss.SetForm(true, true);       // his true shape: the crown, the pauldrons, the cloak, the shards
         ApplyTuning();
-        CombatHUD.Popup(Phases[phase].name.ToUpper(), new Color(1f, 0.7f, 0.4f));
+        CombatHUD.Popup(Phases[phase].name.ToUpper(), PopupColours[Mathf.Clamp(phase, 0, PopupColours.Length - 1)], outline: true);
         CombatSfx.Play(CombatSfx.Clip.Stun, boss.transform.position, 1f);
         boss.Say(Phases[phase].line);
         yield return new WaitForSeconds(2.4f);
@@ -734,8 +747,8 @@ public class BossFight : MonoBehaviour
     }
 
     // ================================================================ THE FAKE-OUT
-    // 1. you hold out the letter, the "mission passed" music starts, he slouches and his bar slowly drains to 0
-    // 2. a beat of "you won"... then the music is CUT and it goes quiet
+    // 1. you hold out the letter, he slouches (the fight music fades out as he says "A letter of recommendation.") and his bar slowly drains to 0
+    // 2. a beat of "you won"... and dead silence
     // 3. he says he wrote the letter, the room flashes, he straightens and TRANSFORMS into his full form
     // 4. his bar refills to 20%: the fourth phase, Fable
     IEnumerator FakeOut()
@@ -745,10 +758,11 @@ public class BossFight : MonoBehaviour
         float startHp = boss.Health.Current;
 
         CombatSfx.Play(CombatSfx.Clip.Telegraph, boss.transform.position, 0.6f);
-        if (music != null && music.clip != null) { music.volume = 1f; music.Play(); }
         string line = "What is that?";
         boss.Say(line);
-        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + 0.3f);
+        // the fight music starts fading out as "What is that?" begins and is fully gone when the slouch finishes (1.1 s, see ProfessorAI), and stays silent
+        MusicDirector.Silence(ProfessorAI.LineSeconds(line) + 0.15f + 1.3f + 1.1f);
+        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + 0.15f);
         boss.Say("A letter of recommendation.");
         yield return new WaitForSeconds(1.3f);
 
@@ -766,13 +780,11 @@ public class BossFight : MonoBehaviour
         MixRealm(1f);
         yield return new WaitForSeconds(1.7f);                              // a long beat: it looks like you won
 
-        // the music is cut
-        if (music != null) music.Stop();
-        yield return new WaitForSeconds(1.1f);                              // dead silence
+        yield return new WaitForSeconds(1.1f);                              // dead silence (the music has already faded out)
 
         line = "Did you read the signature?";
         boss.Say(line);
-        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + 0.3f);
+        yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + 0.15f);
         boss.Say("I wrote that letter.");
         yield return new WaitForSeconds(2.0f);
 
@@ -789,7 +801,8 @@ public class BossFight : MonoBehaviour
         CombatHUD.Flash(Color.white, 1.4f);
         CombatSfx.Play(CombatSfx.Clip.Stun, boss.transform.position, 1f);
         CombatSfx.Play(CombatSfx.Clip.Heavy, boss.transform.position, 1f);
-        CombatHUD.Popup("FABLE", new Color(1f, 0.7f, 0.4f));
+        CombatHUD.Popup("FABLE", PopupColours[Fable], outline: true);
+        MusicDirector.Play(MusicTrack.Fable, 0.05f);                        // the intense music snaps on, as if someone just turned it up
         boss.Say("Recommendation denied.");
 
         // his health comes back, slowly, and the room's colours return
@@ -960,11 +973,45 @@ public class BossFight : MonoBehaviour
         StartCoroutine(Victory());
     }
 
+    // The music fades out over the wait before the colour wave plus 1 s of the wave itself.
+    const float WaitBeforeWave = 1.6f, WaveSeconds = 4.8f;
+
     IEnumerator Victory()
     {
+        MusicDirector.Silence(WaitBeforeWave + 1f);                  // the fade lasts 1 s into the colour wave (final)
         boss.Say("Well... here's your attendance.");
-        yield return new WaitForSeconds(3.2f);
+        yield return new WaitForSeconds(WaitBeforeWave);             // let the line be read while he falls
+
+        // the room's real colours fan out from where he fell (the flat red look melts away in a growing circle); when the whole room has its
+        // colours back, the "Mission Passed" screen comes up
+        RealmStyle rs = realm != null ? realm : FindAnyObjectByType<RealmStyle>();
+        if (rs != null)
+        {
+            Vector3 from = boss.transform.position + Vector3.up * 1f;
+            // The wave covers the WHOLE room, including the part behind the player (turn around and it is coloured too). It is sized to reach the
+            // farthest corner of the room and no further, and it speeds up as it goes: slow around him, fast across the room. The moment it
+            // reaches that corner the whole room is coloured and the screen comes up, with nothing left to wait for.
+            float far = FarthestCornerFrom(from);
+            rs.Reveal(from, WaveSeconds, far, 2f);
+            CombatSfx.Play(CombatSfx.Clip.Stun, boss.transform.position, 0.9f);
+            while (!rs.RevealDone) yield return null;                 // and the screen comes up the moment the room is fully coloured
+        }
+        else yield return new WaitForSeconds(WaveSeconds - 3f);
         MissionPassedScreen.Show();
+    }
+
+    // How far from a point is the farthest corner of the room (floor or ceiling)? The wave has to reach exactly that far.
+    float FarthestCornerFrom(Vector3 from)
+    {
+        if (Mathf.Abs(roomMinX) > 1e5f || Mathf.Abs(roomMaxX) > 1e5f || Mathf.Abs(roomMinZ) > 1e5f || Mathf.Abs(roomMaxZ) > 1e5f) return 25f;   // (walls were not found)
+        float ceiling = 2.6f;                                           // a little above the ceiling (2.48)
+        if (Physics.Raycast(from, Vector3.up, out RaycastHit up, 10f, ~0, QueryTriggerInteraction.Ignore)) ceiling = up.point.y;
+        float best = 0f;
+        foreach (float x in new[] { roomMinX, roomMaxX })
+            foreach (float z in new[] { roomMinZ, roomMaxZ })
+                foreach (float y in new[] { 0f, ceiling })
+                    best = Mathf.Max(best, Vector3.Distance(from, new Vector3(x, y, z)));
+        return best + 0.3f;                                             // + the soft edge of the wave, so the last pixel of the corner is fully coloured
     }
 
     // ---------------------------------------------------------------- losing: "ATTENDANCE 0%" and TRY AGAIN, like the tutorial fight
@@ -1003,5 +1050,6 @@ public class BossFight : MonoBehaviour
         player.InputEnabled = true;
         beaten = false;
         BeginFighting(1.5f);
+        MusicDirector.Play(MusicTrack.CombatClaude, 1.5f);                     // (always the normal fight music again, even if you fell during Fable)
     }
 }

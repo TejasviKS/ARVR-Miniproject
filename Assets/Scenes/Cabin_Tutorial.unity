@@ -956,8 +956,8 @@ MonoBehaviour:
   onUsed:
     m_PersistentCalls:
       m_Calls: []
-  portalColor: {r: 0.89, g: 0.31, b: 0.35, a: 1}
-  accentColor: {r: 0.17, g: 0.06, b: 0.16, a: 1}
+  portalColor: {r: 0.949, g: 0.541, b: 0.188, a: 1}
+  accentColor: {r: 0.106, g: 0.082, b: 0.188, a: 1}
   swirlSpeed: 1
   glowLight: 1
   hum: 1
