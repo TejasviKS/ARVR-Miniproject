@@ -72,6 +72,8 @@ public class MissionPassedScreen : MonoBehaviour
 
     void Update()
     {
+        // leaving: the tune fades out together with the screen
+        if (finished && audioSrc != null) audioSrc.volume = Mathf.MoveTowards(audioSrc.volume, 0f, Time.unscaledDeltaTime / MenuExit.FadeSeconds);
         var kb = Keyboard.current;
         if (!finished && T > ButtonAt && kb != null && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) MainMenu();
     }
@@ -90,7 +92,7 @@ public class MissionPassedScreen : MonoBehaviour
     {
         if (finished) return;
         finished = true;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        MenuExit.Go();                                      // the screen and the "mission passed" tune fade out, then the menu loads
     }
 
     void OnGUI()
@@ -162,7 +164,7 @@ public class MissionPassedScreen : MonoBehaviour
 
         // the Main Menu button
         float ba = Mathf.Clamp01((t - ButtonAt) / 0.4f);
-        if (ba > 0f && !finished)
+        if (ba > 0f)                                        // (it stays visible, and fades with everything else, while leaving)
         {
             float bw = Mathf.Max(210f, w * 0.115f), bh = Mathf.Max(46f, h * 0.062f);
             Rect b = new Rect(w / 2f - bw / 2f, h * 0.72f, bw, bh);
@@ -178,7 +180,7 @@ public class MissionPassedScreen : MonoBehaviour
             hintStyle.fontSize = Mathf.RoundToInt(bh * 0.30f);
             WastedScreen.Pin(hintStyle, new Color(0.85f, 0.85f, 0.9f, 0.75f * ba));
             GUI.Label(new Rect(b.x - 60f, b.yMax + 8f, b.width + 120f, bh * 0.5f), "or press Enter", hintStyle);
-            if (t > ButtonAt + 0.15f && GUI.Button(b, GUIContent.none, GUIStyle.none)) MainMenu();
+            if (t > ButtonAt + 0.15f && !finished && GUI.Button(b, GUIContent.none, GUIStyle.none)) MainMenu();
         }
         GUI.color = Color.white;
     }

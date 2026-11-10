@@ -760,8 +760,9 @@ public class BossFight : MonoBehaviour
         CombatSfx.Play(CombatSfx.Clip.Telegraph, boss.transform.position, 0.6f);
         string line = "What is that?";
         boss.Say(line);
-        // the fight music starts fading out as "What is that?" begins and is fully gone when the slouch finishes (1.1 s, see ProfessorAI), and stays silent
-        MusicDirector.Silence(ProfessorAI.LineSeconds(line) + 0.15f + 1.3f + 1.1f);
+        // the fight music starts fading out as "What is that?" begins and is fully gone 2 s after the slouch finishes (the slouch takes 1.1 s, see
+        // ProfessorAI), and stays silent. Only the fade is long: the dialogue and the slouch below keep their own timing.
+        MusicDirector.Silence(ProfessorAI.LineSeconds(line) + 0.15f + 1.3f + 1.1f + 2f);
         yield return new WaitForSeconds(ProfessorAI.LineSeconds(line) + 0.15f);
         boss.Say("A letter of recommendation.");
         yield return new WaitForSeconds(1.3f);
@@ -973,8 +974,9 @@ public class BossFight : MonoBehaviour
         StartCoroutine(Victory());
     }
 
-    // The music fades out over the wait before the colour wave plus 1 s of the wave itself.
-    const float WaitBeforeWave = 1.6f, WaveSeconds = 4.8f;
+    // The world stays monochrome while the music fades out (a slow 4.6 s fade, 2 s longer than before), and the colour wave starts once it is nearly
+    // gone: the music is fully silent 1 s into the wave. The wave itself and the "Mission Passed" screen keep their own timing after that.
+    const float WaitBeforeWave = 3.6f, WaveSeconds = 4.8f;
 
     IEnumerator Victory()
     {

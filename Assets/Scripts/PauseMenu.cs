@@ -34,6 +34,7 @@ public class PauseMenu : MonoBehaviour
 
     void Update()
     {
+        if (MenuExit.Active) return;                                                  // leaving for the menu: the pause menu no longer reacts
         if (IsPaused && OptionsPanel.IsOpen) { OptionsPanel.Tick(); return; }       // the options screen handles Esc itself (back to this menu)
         Keyboard kb = Keyboard.current;
         if (kb != null && kb.escapeKey.wasPressedThisFrame)
@@ -111,19 +112,19 @@ public class PauseMenu : MonoBehaviour
         float bw = Mathf.Max(240f, w * 0.14f), bh = Mathf.Max(52f, h * 0.066f), gap = bh * 0.34f;
         float y = h * 0.37f;
         Rect Slot() { Rect r = new Rect(w / 2f - bw / 2f, y, bw, bh); y += bh + gap; return r; }
-        if (GtaMenuUI.Pill(Slot(), "<size={0}>R</size>esume", a, true, buttonStyle)) Resume();
-        if (GtaMenuUI.Pill(Slot(), "<size={0}>O</size>ptions", a, true, buttonStyle)) OptionsPanel.Open();
-        if (GtaMenuUI.Pill(Slot(), "<size={0}>M</size>ain <size={0}>M</size>enu", a, true, buttonStyle)) MainMenu_();
-        if (GtaMenuUI.Pill(Slot(), "<size={0}>Q</size>uit", a, false, buttonStyle)) Quit();
+        bool leaving = MenuExit.Active;                                          // (the buttons are only drawn while the screen fades out, they do nothing)
+        if (GtaMenuUI.Pill(Slot(), "<size={0}>R</size>esume", a, true, buttonStyle) && !leaving) Resume();
+        if (GtaMenuUI.Pill(Slot(), "<size={0}>O</size>ptions", a, true, buttonStyle) && !leaving) OptionsPanel.Open();
+        if (GtaMenuUI.Pill(Slot(), "<size={0}>M</size>ain <size={0}>M</size>enu", a, true, buttonStyle) && !leaving) MainMenu_();
+        if (GtaMenuUI.Pill(Slot(), "<size={0}>Q</size>uit", a, false, buttonStyle) && !leaving) Quit();
         GUI.color = Color.white;
     }
 
     // back to the main menu (the game stops where it is: the next Play starts a fresh run)
     static void MainMenu_()
     {
-        Time.timeScale = 1f;
-        AudioListener.pause = false;
-        IsPaused = false;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        if (MenuExit.Active) return;
+        // the game stays paused while the screen and the music fade out; it is un-paused just before the menu loads
+        MenuExit.Go(() => { Time.timeScale = 1f; AudioListener.pause = false; IsPaused = false; });
     }
 }

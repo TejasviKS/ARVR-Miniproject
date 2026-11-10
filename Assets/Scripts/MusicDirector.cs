@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,7 +25,9 @@ public enum MusicTrack { None, Calm, Combat, Fable, CombatClaude }   // Combat =
 public class MusicDirector : MonoBehaviour
 {
     // how loud each track should be compared with the others (1 = the reference level)
-    static readonly float[] Weight = { 0f, 1.5f, 1.25f, 1.25f, 1.25f };
+    // (None, Calm, Combat (GPT), Fable, CombatClaude). A track's volume is min(1, ReferenceRms * weight / its loudness), and a volume cannot go above 1.
+    // Calm hit that ceiling (its file peaked at 0 dB), so calm.ogg itself was raised by 2 dB with a gentle peak limiter, and loudness.txt updated to match.
+    static readonly float[] Weight = { 0f, 2.5f, 1.9f, 1.25f, 1.9f };
     static readonly string[] FileName = { "", "calm", "combat_gpt", "fable", "combat_claude" };
     const float ReferenceRms = 0.07f;          // the average level a weight-1 track is brought to (before the volume option)
     const float DuckLevel = 0.4f, PausedLevel = 0.3f, WhooshDip = 0.55f, ListenLevel = 0.35f;
@@ -50,7 +53,7 @@ public class MusicDirector : MonoBehaviour
     public static MusicTrack Current => inst != null ? inst.current : MusicTrack.None;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void ResetStatics() { inst = null; }
+    static void ResetStatics() { inst = null; rmsTable = null; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Boot()
@@ -246,7 +249,7 @@ public class MusicDirector : MonoBehaviour
             if (clip == null) { menuMissing = true; Debug.LogWarning("[MusicDirector] No music file named 'menu' in Assets/Resources/Music."); return; }
             menuSrc.clip = clip;
         }
-        if (!menuMeasured) { menuMeasured = true; menuBase = BaseGainFor(menuSrc.clip, 1.25f); }
+        if (!menuMeasured) { menuMeasured = true; menuBase = GainFor("menu", menuSrc.clip, 1.25f); }
         menuWanted = true;
         menuTarget = 1f; menuRate = 1f / Mathf.Max(0.02f, fadeIn);
         menuRestartAt = -1f;
@@ -298,7 +301,7 @@ public class MusicDirector : MonoBehaviour
             if (clip == null) { creditsMissing = true; Debug.LogWarning("[MusicDirector] No music file named 'credits' in Assets/Resources/Music."); return; }
             creditsSrc.clip = clip;
         }
-        if (!creditsMeasured) { creditsMeasured = true; creditsBase = BaseGainFor(creditsSrc.clip, 1.25f); }
+        if (!creditsMeasured) { creditsMeasured = true; creditsBase = GainFor("credits", creditsSrc.clip, 1.25f); }
         EndMenu(0.05f);                                            // (the menu music is off while the credits music plays)
         creditsActive = true;
         creditsTarget = 1f; creditsLevel = 1f;                     // it starts at full volume, no fade: the snare is the first thing you hear
@@ -369,16 +372,41 @@ public class MusicDirector : MonoBehaviour
         if (!l.measured)
         {
             l.measured = true;
-            l.baseGain = BaseGainFor(l.src.clip, Weight[(int)track]);
+            l.baseGain = GainFor(FileName[(int)track], l.src.clip, Weight[(int)track]);
         }
         return true;
     }
 
     // The average loudness (RMS) of the whole clip, then the volume that brings it to the reference level (times the track's weight).
     // A louder file gets a lower base volume, a quieter one a higher one (never above 1), so any file you drop in sounds equally loud.
+    // The loudness numbers (Music/loudness.txt, made by Tools > Music > Measure Loudness): "name=rms" per line. The tracks are streamed, so they cannot
+    // be measured while the game runs.
+    static Dictionary<string, float> rmsTable;
+
+    static float GainFor(string name, AudioClip clip, float weight)
+    {
+        if (rmsTable == null)
+        {
+            rmsTable = new Dictionary<string, float>();
+            TextAsset ta = Resources.Load<TextAsset>("Music/loudness");
+            if (ta != null)
+                foreach (string line in ta.text.Split('\n'))
+                {
+                    int eq = line.IndexOf('=');
+                    if (eq <= 0) continue;
+                    if (float.TryParse(line.Substring(eq + 1).Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v))
+                        rmsTable[line.Substring(0, eq).Trim()] = v;
+                }
+        }
+        if (rmsTable.TryGetValue(name, out float rms) && rms > 1e-4f) return Mathf.Min(1f, ReferenceRms * weight / rms);
+        Debug.LogWarning("[MusicDirector] No loudness number for '" + name + "': run Tools > Music > Measure Loudness. Using a default volume.");
+        return BaseGainFor(clip, weight);
+    }
+
     static float BaseGainFor(AudioClip clip, float weight)
     {
         const float fallback = 0.5f;
+        if (clip.loadType == AudioClipLoadType.Streaming) return fallback;                   // (cannot be read: see GainFor)
         if (clip.loadState != AudioDataLoadState.Loaded) clip.LoadAudioData();
         int ch = clip.channels, window = 32768;
         if (clip.samples < window) return fallback;

@@ -1,0 +1,6 @@
+calm=0.17820
+combat_claude=0.13090
+combat_gpt=0.13109
+credits=0.10245
+fable=0.10632
+menu=0.08981

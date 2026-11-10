@@ -138,7 +138,7 @@ public class MainMenu : MonoBehaviour
     {
         switch (i)
         {
-            case 0: leaving = Time.unscaledTime; MusicDirector.StopMenu(0.45f); break;                  // Play: the screen fades out, then the first level loads
+            case 0: leaving = Time.unscaledTime; MusicDirector.StopMenu(0.45f); MusicDirector.StopCredits(0.45f); break;                  // Play: the screen fades out, then the first level loads
             case 1: OptionsPanel.Open(); break;                             // Options: the sound screen
             case 2: CreditsScreen.Begin(); break;                           // Credits: the menu fades out, the credits roll
             case 3:
@@ -197,14 +197,27 @@ public class MainMenu : MonoBehaviour
         ease *= ui;
         float left = w * 0.045f;
         titleStyle.alignment = TextAnchor.MiddleLeft;
-        titleStyle.fontSize = Mathf.RoundToInt(h * 0.115f);
-        GtaMenuUI.Outlined(new Rect(left, h * 0.095f - drift, w * 0.5f, h * 0.13f), "Grand Theft", titleStyle, new Color(0.97f, 0.97f, 0.98f), Mathf.Max(3f, h * 0.0065f), ease);
-        titleStyle.fontSize = Mathf.RoundToInt(h * 0.13f);
-        GtaMenuUI.Outlined(new Rect(left, h * 0.205f - drift, w * 0.5f, h * 0.15f), "Attendance", titleStyle, Gold, Mathf.Max(3f, h * 0.0075f), ease);
+        // The title is sized from its own measured width: "Attendance" a few pixels narrower than "Grand Theft", and the pair never wider than the
+        // space left of the first card (it starts at 40% of the screen width), so it cannot overlap the cards at any aspect ratio (16:9, 16:10, ...).
+        float size0 = h * 0.105f;
+        titleStyle.fontSize = Mathf.RoundToInt(size0);
+        float topW = titleStyle.CalcSize(new GUIContent("Grand Theft")).x;
+        float lowW = titleStyle.CalcSize(new GUIContent("Attendance")).x;
+        float avail = w * 0.38f - left - h * 0.0075f - 2f;                                    // up to 2% of the width before the first card, minus the outline
+        float s = Mathf.Min(1f, avail / Mathf.Max(1f, topW));                                 // shrink the whole title if the screen is too narrow
+        float cut = 5f * h / 1080f;                                                           // "Attendance" is 5 px (at 1080p) narrower
+        int topSize = Mathf.RoundToInt(size0 * s);
+        int lowSize = Mathf.RoundToInt(size0 * s * (topW - cut) / Mathf.Max(1f, lowW));
+        float k = size0 * s / (h * 0.115f);                                                   // how the layout scales compared with the first design
+        float y1 = h * 0.095f - drift, y2 = h * 0.095f + h * 0.11f * k - drift;
+        titleStyle.fontSize = topSize;
+        GtaMenuUI.Outlined(new Rect(left, y1, w * 0.5f, h * 0.13f * k), "Grand Theft", titleStyle, new Color(0.97f, 0.97f, 0.98f), Mathf.Max(3f, h * 0.0065f), ease);
+        titleStyle.fontSize = lowSize;
+        GtaMenuUI.Outlined(new Rect(left, y2, w * 0.5f, h * 0.15f * k), "Attendance", titleStyle, Gold, Mathf.Max(3f, h * 0.0075f), ease);
         titleStyle.alignment = TextAnchor.MiddleCenter;
         smallStyle.fontSize = Mathf.RoundToInt(h * 0.026f);
         smallStyle.normal.textColor = new Color(1f, 0.97f, 0.9f, Mathf.Clamp01((t - 0.9f) / 0.6f) * ui);
-        GUI.Label(new Rect(left + 4f, h * 0.345f, w * 0.3f, h * 0.04f), "Reach class.  Hit 75%.", smallStyle);
+        GUI.Label(new Rect(left + 4f, h * 0.095f + h * 0.25f * k, w * 0.3f, h * 0.04f), "Reach class.  Hit 75%.", smallStyle);
 
         // ---- the menu: a plain list at the bottom left ----
         string[] items = { "Play", "Options", "Credits", "Quit" };
@@ -280,8 +293,10 @@ public class MainMenu : MonoBehaviour
             float slide = Mathf.Clamp01((t - 0.3f - 0.14f * i) / 0.7f);
             float ease = 1f - Mathf.Pow(1f - slide, 3f);
             float bob = Mathf.Sin(Time.unscaledTime * 0.8f + i * 1.3f) * h * 0.004f;
-            float px = x0 + i * step + (i == 2 ? -pw * 0.08f : 0f), pwi = pw * (i == 2 ? 1.28f : 1f);
-            float ph = h * hts[i], py = h * tops[i] + (1f - ease) * h * 0.9f + bob;
+            // (snapped to whole pixels: while a card drifts, pieces of a character drawn at fractional positions round differently and a hairline gap
+            //  flickered open between them, e.g. between the two halves of the student's hat)
+            float px = Mathf.Round(x0 + i * step + (i == 2 ? -pw * 0.08f : 0f)), pwi = Mathf.Round(pw * (i == 2 ? 1.28f : 1f));
+            float ph = Mathf.Round(h * hts[i]), py = Mathf.Round(h * tops[i] + (1f - ease) * h * 0.9f + bob);
             Rect panel = new Rect(px, py, pwi, ph);
             // a cream frame, the colour, a soft light from the top
             Fill(new Rect(panel.x - 5f, panel.y - 5f, panel.width + 10f, panel.height + 10f), new Color(1f, 0.97f, 0.88f));
@@ -313,7 +328,7 @@ public class MainMenu : MonoBehaviour
                 Fill(new Rect(book.x + book.width * 0.12f, book.y + book.height * 0.18f, book.width * 0.76f, book.height * 0.12f), new Color(0.96f, 0.93f, 0.82f));
                 Fill(new Rect(book.x + book.width * 0.12f, book.y + book.height * 0.5f, book.width * 0.5f, book.height * 0.1f), new Color(0.96f, 0.93f, 0.82f));
                 // a mortarboard on the head (the academic touch)
-                Rect cap = new Rect(cx - pw * 0.27f, ph * 0.115f, pw * 0.54f, ph * 0.05f);
+                Rect cap = new Rect(cx - pw * 0.27f, ph * 0.115f, pw * 0.54f, ph * 0.05f + 3f);            // (3 px longer: it overlaps the band, so they can never come apart)
                 Fill(cap, dark);
                 Fill(new Rect(cx - head / 2f, ph * 0.165f, head, ph * 0.085f), dark);                      // the band of the hat, down over the head
                 Fill(new Rect(cx + pw * 0.22f, ph * 0.12f, pw * 0.022f, ph * 0.09f), Gold);

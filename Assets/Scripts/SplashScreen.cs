@@ -3,16 +3,16 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// VERSION 1
+// VERSION 2
 // The opening screens, shown once when the game starts, before the main menu:
+//   (a long black pause first: in a build, Unity's own "Made with Unity" screen plays at the very start and uses up part of it)
 //   1. the Cave Labs logo (cropped to a circle) with a slow, majestic publisher sting
-//   2. "Made with Unity" with a short bright sting
-//   3. the Kengeri Studios logo with "PRESENTS" under it and a warm retro sting
+//   2. the Kengeri Studios logo with "PRESENTS" under it and a warm retro sting
 //   then the main menu fades in.
+// (There is no "Made with Unity" screen of our own: a build adds Unity's automatically.)
 // Space / Enter / Esc / a click skips to the next screen. Put this on one object in the Splash scene (a Camera and nothing else is needed).
 //
-// Files: Assets/Resources/Logos/cave_labs.jpeg, kengeri_studios.png (and, optionally, unity_logo.png: the official Unity logo, shown instead of
-// the plain stand-in mark), and Assets/Resources/Sting/sting_cave.ogg, sting_unity.ogg, sting_kengeri.ogg.
+// Files: Assets/Resources/Logos/cave_labs.jpeg and kengeri_studios.png, and Assets/Resources/Sting/sting_cave.ogg and sting_kengeri.ogg.
 public class SplashScreen : MonoBehaviour
 {
     public string nextScene = "MainMenu";
@@ -33,10 +33,9 @@ public class SplashScreen : MonoBehaviour
     readonly Card[] cards =
     {
         new Card { length = 7.2f, fadeIn = 2.8f, fadeOutAt = 5.6f, sting = "Sting/sting_cave", stingVolume = 0.9f },
-        new Card { length = 5.0f, fadeIn = 1.3f, fadeOutAt = 3.8f, sting = "Sting/sting_unity", stingVolume = 0.9f },
         new Card { length = 6.8f, fadeIn = 2.0f, fadeOutAt = 5.4f, sting = "Sting/sting_kengeri", stingVolume = 0.9f },
     };
-    const float StartBlank = 2f;      // black before the first logo
+    const float StartBlank = 5f;      // black before the first logo (Unity's own splash screen, added by a build, uses up some of this)
     const float Gap = 0.9f;           // black between two screens
     const float MenuDelay = 1f;       // the menu music starts when the last logo has faded out; the main menu starts 1 s later
     const float SkipFade = 0.25f;
@@ -46,8 +45,8 @@ public class SplashScreen : MonoBehaviour
     bool leaving;
     float leaveAt;
     AudioSource audioSrc;
-    Texture2D caveCircle, kengeriCircle, unityLogo, unityMark;
-    GUIStyle small, big, presents;
+    Texture2D caveCircle, kengeriCircle;
+    GUIStyle presents;
     readonly List<AudioSource> playing = new List<AudioSource>();
 
     void Start()
@@ -57,8 +56,6 @@ public class SplashScreen : MonoBehaviour
         // (no cursor request: the mouse arrow stays hidden during the opening screens)
         caveCircle = Circle(Resources.Load<Texture2D>("Logos/cave_labs"), 0.985f);
         kengeriCircle = Circle(Resources.Load<Texture2D>("Logos/kengeri_studios"), 0.995f);
-        unityLogo = Resources.Load<Texture2D>("Logos/unity_logo");
-        if (unityLogo == null) unityMark = MakeCubeMark(256);
         Next(Time.unscaledTime + StartBlank);
     }
 
@@ -150,10 +147,6 @@ public class SplashScreen : MonoBehaviour
             GUI.color = new Color(1f, 1f, 1f, a);
             if (caveCircle != null) GUI.DrawTexture(r, caveCircle);
         }
-        else if (index == 1)
-        {
-            DrawUnity(w, h, a);
-        }
         else
         {
             float d = h * 0.6f * grow;
@@ -169,34 +162,6 @@ public class SplashScreen : MonoBehaviour
             GUI.Label(new Rect(0, h * 0.47f + d / 2f + h * 0.02f, w, h * 0.08f), "P R E S E N T S", presents);
         }
         GUI.color = Color.white;
-    }
-
-    void DrawUnity(float w, float h, float a)
-    {
-        if (small == null) small = MakeStyle(0.03f, FontStyle.Normal);
-        if (big == null) big = MakeStyle(0.1f, FontStyle.Bold);
-        small.fontSize = Mathf.RoundToInt(h * 0.032f);
-        big.fontSize = Mathf.RoundToInt(h * 0.1f);
-        GUI.color = new Color(1f, 1f, 1f, a);
-        if (unityLogo != null)
-        {
-            float lh = h * 0.34f, lw = lh * unityLogo.width / unityLogo.height;       // (the official logo is the cube over the word)
-            GUI.DrawTexture(new Rect(w / 2f - lw / 2f, h * 0.54f - lh / 2f, lw, lh), unityLogo, ScaleMode.ScaleToFit);
-        }
-        else
-        {
-            float m = h * 0.2f;
-            big.alignment = TextAnchor.MiddleLeft;
-            float textW = big.CalcSize(new GUIContent("Unity")).x, gap = m * 0.18f;
-            float x0 = w * 0.5f - (m + gap + textW) / 2f;                    // the mark and the word are centred together
-            GUI.DrawTexture(new Rect(x0, h * 0.5f - m / 2f + h * 0.025f, m, m), unityMark);
-            WastedScreen.Pin(big, Color.white);
-            GUI.Label(new Rect(x0 + m + gap, h * 0.5f - h * 0.08f + h * 0.025f, textW + 10f, h * 0.16f), "Unity", big);
-        }
-        small.alignment = TextAnchor.MiddleCenter;
-        GUI.color = new Color(1f, 1f, 1f, a);
-        WastedScreen.Pin(small, new Color(0.85f, 0.85f, 0.88f));
-        GUI.Label(new Rect(0, h * 0.5f - h * 0.235f, w, h * 0.05f), "M A D E   W I T H", small);
     }
 
     GUIStyle MakeStyle(float size, FontStyle fs)
@@ -227,40 +192,5 @@ public class SplashScreen : MonoBehaviour
         var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
         t.SetPixels(px); t.Apply();
         return t;
-    }
-
-    // A plain stand-in for the Unity mark: a hexagon with a cube drawn inside it (drop the official logo in Logos/unity_logo.png to replace it)
-    static Texture2D MakeCubeMark(int n)
-    {
-        var px = new Color[n * n];
-        Vector2[] v = new Vector2[6];
-        for (int i = 0; i < 6; i++)
-        {
-            float ang = (90f + 60f * i) * Mathf.Deg2Rad;
-            v[i] = new Vector2(0.5f + 0.46f * Mathf.Cos(ang), 0.5f + 0.46f * Mathf.Sin(ang)) * n;
-        }
-        Vector2 c = new Vector2(0.5f, 0.5f) * n;
-        var segs = new List<Vector2[]>();
-        for (int i = 0; i < 6; i++) segs.Add(new[] { v[i], v[(i + 1) % 6] });
-        for (int i = 0; i < 6; i += 2) segs.Add(new[] { c, v[i] });
-        float half = n * 0.022f;
-        for (int y = 0; y < n; y++)
-            for (int x = 0; x < n; x++)
-            {
-                Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
-                float best = 1e9f;
-                foreach (var s in segs) best = Mathf.Min(best, DistToSegment(p, s[0], s[1]));
-                px[y * n + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(half - best + 0.5f));
-            }
-        var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        t.SetPixels(px); t.Apply();
-        return t;
-    }
-
-    static float DistToSegment(Vector2 p, Vector2 a, Vector2 b)
-    {
-        Vector2 ab = b - a;
-        float k = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
-        return (p - (a + ab * k)).magnitude;
     }
 }
