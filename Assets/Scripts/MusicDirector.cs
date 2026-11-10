@@ -102,6 +102,7 @@ public class MusicDirector : MonoBehaviour
         holdDucks = 0; duckUntil = 0f; listenUntil = 0f;
         resumeTrack = MusicTrack.None;
         bool silent = current == MusicTrack.None;
+        if (scene != "MainMenu" && scene != "Splash") { EndMenu(0.6f); EndCredits(0.6f); }      // the menu and credits music belong to the menu (and the opening screens) only
         switch (scene)
         {
             case "Cabin_Tutorial":
@@ -219,6 +220,121 @@ public class MusicDirector : MonoBehaviour
         return string.Join("\n", parts);
     }
 
+    // ---------------------------------------------------------------- the main menu music (Music/menu.ogg)
+    // Separate from the game tracks: it plays from the start, and when it ends it waits MenuLoopPause seconds and plays again. Its volume is
+    // the "Menu Music Volume" option. The opening screens start it; the main menu makes sure it is on; any other scene fades it out.
+    const float MenuLoopPause = 3f;
+    AudioSource menuSrc;
+    float menuBase = 0.5f, menuLevel, menuTarget, menuRate = 1f, menuRestartAt = -1f;
+    bool menuWanted, menuMeasured, menuMissing;
+
+    public static void PlayMenu(float fadeIn = 0.05f) { if (inst != null) inst.StartMenu(fadeIn); }
+    public static void StopMenu(float fadeOut = 0.6f) { if (inst != null) inst.EndMenu(fadeOut); }
+    public static bool MenuPlaying => inst != null && inst.menuWanted;
+
+    void StartMenu(float fadeIn)
+    {
+        if (menuWanted || menuMissing || creditsActive) return;                  // (not while the credits music is playing)
+        if (menuSrc == null)
+        {
+            menuSrc = gameObject.AddComponent<AudioSource>();
+            menuSrc.loop = false; menuSrc.playOnAwake = false; menuSrc.spatialBlend = 0f; menuSrc.ignoreListenerPause = true; menuSrc.priority = 0; menuSrc.volume = 0f;
+        }
+        if (menuSrc.clip == null)
+        {
+            AudioClip clip = Resources.Load<AudioClip>("Music/menu");
+            if (clip == null) { menuMissing = true; Debug.LogWarning("[MusicDirector] No music file named 'menu' in Assets/Resources/Music."); return; }
+            menuSrc.clip = clip;
+        }
+        if (!menuMeasured) { menuMeasured = true; menuBase = BaseGainFor(menuSrc.clip, 1.25f); }
+        menuWanted = true;
+        menuTarget = 1f; menuRate = 1f / Mathf.Max(0.02f, fadeIn);
+        menuRestartAt = -1f;
+        menuSrc.time = 0f; menuSrc.Play();
+    }
+
+    void EndMenu(float fadeOut)
+    {
+        menuWanted = false; menuRestartAt = -1f;
+        menuTarget = 0f; menuRate = 1f / Mathf.Max(0.02f, fadeOut);
+    }
+
+    void UpdateMenuMusic(float dt)
+    {
+        if (menuSrc == null) return;
+        if (menuLevel != menuTarget) menuLevel = Mathf.MoveTowards(menuLevel, menuTarget, dt * menuRate);
+        menuSrc.volume = menuBase * menuLevel * menuLevel * OptionsPanel.MenuMusicVolume;
+        if (menuWanted)
+        {
+            if (!menuSrc.isPlaying && menuRestartAt < 0f) menuRestartAt = Time.unscaledTime + MenuLoopPause;      // it ended: a pause, then again
+            if (menuRestartAt >= 0f && Time.unscaledTime >= menuRestartAt) { menuRestartAt = -1f; menuSrc.time = 0f; menuSrc.Play(); }
+        }
+        else if (menuLevel <= 0f && menuSrc.isPlaying) menuSrc.Stop();
+    }
+
+    // ---------------------------------------------------------------- the credits music (Music/credits.ogg)
+    // Started by the credits screen (from its first second, so the opening snare lands on the bang). It plays right to its end, whatever
+    // the screen is doing: it is only cut by Play (StopCredits) or by leaving the menu. When it ends, the menu music comes back after the
+    // usual 3 s pause. Its volume is the "Menu Music Volume" option.
+    AudioSource creditsSrc;
+    float creditsBase = 0.5f, creditsLevel, creditsTarget, creditsRate = 1f;
+    bool creditsActive, creditsMeasured, creditsMissing;
+
+    public static void PlayCredits() { if (inst != null) inst.StartCredits(); }
+    public static void StopCredits(float fadeOut = 0.6f) { if (inst != null) inst.EndCredits(fadeOut); }
+    public static bool CreditsPlaying => inst != null && inst.creditsActive;
+
+    void StartCredits()
+    {
+        if (creditsMissing) return;
+        if (creditsSrc == null)
+        {
+            creditsSrc = gameObject.AddComponent<AudioSource>();
+            creditsSrc.loop = false; creditsSrc.playOnAwake = false; creditsSrc.spatialBlend = 0f; creditsSrc.ignoreListenerPause = true; creditsSrc.priority = 0; creditsSrc.volume = 0f;
+        }
+        if (creditsSrc.clip == null)
+        {
+            AudioClip clip = Resources.Load<AudioClip>("Music/credits");
+            if (clip == null) { creditsMissing = true; Debug.LogWarning("[MusicDirector] No music file named 'credits' in Assets/Resources/Music."); return; }
+            creditsSrc.clip = clip;
+        }
+        if (!creditsMeasured) { creditsMeasured = true; creditsBase = BaseGainFor(creditsSrc.clip, 1.25f); }
+        EndMenu(0.05f);                                            // (the menu music is off while the credits music plays)
+        creditsActive = true;
+        creditsTarget = 1f; creditsLevel = 1f;                     // it starts at full volume, no fade: the snare is the first thing you hear
+        creditsSrc.Stop(); creditsSrc.time = 0f; creditsSrc.Play();
+    }
+
+    void EndCredits(float fadeOut)
+    {
+        creditsActive = false;
+        creditsTarget = 0f; creditsRate = 1f / Mathf.Max(0.02f, fadeOut);
+    }
+
+    void UpdateCreditsMusic(float dt)
+    {
+        if (creditsSrc == null) return;
+        if (creditsLevel != creditsTarget) creditsLevel = Mathf.MoveTowards(creditsLevel, creditsTarget, dt * creditsRate);
+        creditsSrc.volume = creditsBase * creditsLevel * creditsLevel * OptionsPanel.MenuMusicVolume;
+        if (creditsActive && !creditsSrc.isPlaying)
+        {
+            creditsActive = false;                                  // the song ended by itself: after the usual pause, the menu music starts again
+            creditsTarget = 0f;
+            ResumeMenuAfterPause();
+        }
+        else if (!creditsActive && creditsLevel <= 0f && creditsSrc.isPlaying) creditsSrc.Stop();
+    }
+
+    // The menu music is "wanted" again but not playing yet: UpdateMenuMusic then waits its loop pause (3 s) and starts it
+    void ResumeMenuAfterPause()
+    {
+        if (menuMissing) return;
+        if (menuSrc == null) { StartMenu(0.05f); if (menuSrc != null) { menuSrc.Stop(); } }
+        if (menuSrc == null || menuSrc.clip == null) return;
+        menuWanted = true; menuTarget = 1f; menuLevel = 1f; menuRate = 20f;
+        menuRestartAt = -1f;
+    }
+
     // ---------------------------------------------------------------- inside
     void PlayInternal(MusicTrack track, float fadeIn, float fadeOut)
     {
@@ -292,6 +408,9 @@ public class MusicDirector : MonoBehaviour
         listen = Mathf.MoveTowards(listen, listening ? ListenLevel : 1f, dt * (listening ? 1.5f : 0.4f));       // down in ~0.4 s, back up slowly
         bool dipping = Time.unscaledTime < dipUntil;
         dip = Mathf.MoveTowards(dip, dipping ? WhooshDip : 1f, dt * (dipping ? 6f : 0.7f));         // quick down, a slower swell back up
+
+        UpdateMenuMusic(dt);
+        UpdateCreditsMusic(dt);
 
         float master = OptionsPanel.GameMusicVolume;
         for (int i = 1; i < layers.Length; i++)

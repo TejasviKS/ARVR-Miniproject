@@ -32,11 +32,13 @@ public class SplashScreen : MonoBehaviour
     // how long each screen lasts, and when its logo fades in / out (seconds)
     readonly Card[] cards =
     {
-        new Card { length = 5.6f, fadeIn = 2.2f, fadeOutAt = 4.6f, sting = "Sting/sting_cave", stingVolume = 0.9f },
-        new Card { length = 3.7f, fadeIn = 0.7f, fadeOutAt = 2.9f, sting = "Sting/sting_unity", stingVolume = 0.9f },
-        new Card { length = 5.4f, fadeIn = 1.3f, fadeOutAt = 4.5f, sting = "Sting/sting_kengeri", stingVolume = 0.9f },
+        new Card { length = 7.2f, fadeIn = 2.8f, fadeOutAt = 5.6f, sting = "Sting/sting_cave", stingVolume = 0.9f },
+        new Card { length = 5.0f, fadeIn = 1.3f, fadeOutAt = 3.8f, sting = "Sting/sting_unity", stingVolume = 0.9f },
+        new Card { length = 6.8f, fadeIn = 2.0f, fadeOutAt = 5.4f, sting = "Sting/sting_kengeri", stingVolume = 0.9f },
     };
-    const float Gap = 0.45f;          // black between two screens
+    const float StartBlank = 2f;      // black before the first logo
+    const float Gap = 0.9f;           // black between two screens
+    const float MenuDelay = 1f;       // the menu music starts when the last logo has faded out; the main menu starts 1 s later
     const float SkipFade = 0.25f;
 
     int index = -1;
@@ -52,15 +54,13 @@ public class SplashScreen : MonoBehaviour
     {
         Time.timeScale = 1f;
         AudioListener.pause = false;
-        GameCursor.Request(this);
+        // (no cursor request: the mouse arrow stays hidden during the opening screens)
         caveCircle = Circle(Resources.Load<Texture2D>("Logos/cave_labs"), 0.985f);
         kengeriCircle = Circle(Resources.Load<Texture2D>("Logos/kengeri_studios"), 0.995f);
         unityLogo = Resources.Load<Texture2D>("Logos/unity_logo");
         if (unityLogo == null) unityMark = MakeCubeMark(256);
-        Next(Time.unscaledTime + 0.5f);
+        Next(Time.unscaledTime + StartBlank);
     }
-
-    void OnDestroy() { GameCursor.Release(this); }
 
     // ---------------------------------------------------------------- the sequence
     void Next(float startAt)
@@ -68,7 +68,7 @@ public class SplashScreen : MonoBehaviour
         index++;
         skipAt = -1f;
         cardStart = startAt;
-        if (index >= cards.Length) { leaving = true; leaveAt = Time.unscaledTime; return; }
+        if (index >= cards.Length) { leaving = true; leaveAt = Time.unscaledTime; MusicDirector.PlayMenu(); return; }   // the menu music starts now
     }
 
     bool soundStarted;
@@ -77,7 +77,7 @@ public class SplashScreen : MonoBehaviour
     {
         if (leaving)
         {
-            if (Time.unscaledTime - leaveAt > 0.35f) { Played = true; SceneManager.LoadScene(nextScene); enabled = false; }
+            if (Time.unscaledTime - leaveAt >= MenuDelay) { Played = true; SceneManager.LoadScene(nextScene); enabled = false; }
             return;
         }
         if (index < 0 || index >= cards.Length) return;
@@ -160,7 +160,7 @@ public class SplashScreen : MonoBehaviour
             Rect r = new Rect(w / 2f - d / 2f, h * 0.47f - d / 2f, d, d);
             GUI.color = new Color(1f, 1f, 1f, a);
             if (kengeriCircle != null) GUI.DrawTexture(r, kengeriCircle);
-            float pa = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 1.9f) / 0.9f)) * a;
+            float pa = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 2.6f) / 1.3f)) * a;
             if (presents == null) presents = MakeStyle(0.042f, FontStyle.Bold);
             presents.fontSize = Mathf.RoundToInt(h * 0.042f);
             GUI.color = new Color(1f, 1f, 1f, pa);
@@ -180,8 +180,8 @@ public class SplashScreen : MonoBehaviour
         GUI.color = new Color(1f, 1f, 1f, a);
         if (unityLogo != null)
         {
-            float lh = h * 0.2f, lw = lh * unityLogo.width / unityLogo.height;
-            GUI.DrawTexture(new Rect(w / 2f - lw / 2f, h * 0.5f - lh / 2f + h * 0.02f, lw, lh), unityLogo, ScaleMode.ScaleToFit);
+            float lh = h * 0.34f, lw = lh * unityLogo.width / unityLogo.height;       // (the official logo is the cube over the word)
+            GUI.DrawTexture(new Rect(w / 2f - lw / 2f, h * 0.54f - lh / 2f, lw, lh), unityLogo, ScaleMode.ScaleToFit);
         }
         else
         {
@@ -196,7 +196,7 @@ public class SplashScreen : MonoBehaviour
         small.alignment = TextAnchor.MiddleCenter;
         GUI.color = new Color(1f, 1f, 1f, a);
         WastedScreen.Pin(small, new Color(0.85f, 0.85f, 0.88f));
-        GUI.Label(new Rect(0, h * 0.5f - h * 0.17f, w, h * 0.05f), "M A D E   W I T H", small);
+        GUI.Label(new Rect(0, h * 0.5f - h * 0.235f, w, h * 0.05f), "M A D E   W I T H", small);
     }
 
     GUIStyle MakeStyle(float size, FontStyle fs)
@@ -209,7 +209,7 @@ public class SplashScreen : MonoBehaviour
 
     // ---------------------------------------------------------------- textures made in code
     // A copy of the picture cropped to a circle (the biggest circle that fits in the middle, with a soft edge)
-    static Texture2D Circle(Texture2D src, float radius)
+    public static Texture2D Circle(Texture2D src, float radius)
     {
         if (src == null) return null;
         int n = Mathf.Min(src.width, src.height);

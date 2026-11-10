@@ -20,8 +20,9 @@ public class MainMenu : MonoBehaviour
 
     GUIStyle titleStyle, itemStyle, smallStyle, boldSmall;
     Texture2D sky, circle, triDown, triUp, vignette, band;
+    const float IntroSlow = 4f;          // the fade in from black takes 0.5 x this = 2 s, and everything else in the opening is stretched the same amount
     float startedAt, leaving = -1f;
-    bool loading;
+    bool loading, cursorShown;
     int selected;
     Vector2 lastMouse;
 
@@ -31,7 +32,7 @@ public class MainMenu : MonoBehaviour
         OptionsPanel.Close();
         Time.timeScale = 1f;
         AudioListener.pause = false;
-        GameCursor.Request(this);                  // the menu needs the mouse arrow
+        MusicDirector.PlayMenu();                  // (already playing if the opening screens started it)
     }
 
     void OnDestroy() { GameCursor.Release(this); }
@@ -110,6 +111,11 @@ public class MainMenu : MonoBehaviour
     // ---------------------------------------------------------------- input
     void Update()
     {
+        // the mouse arrow stays hidden through the opening screens and until the menu has fully appeared (the rating box is the last thing in)
+        bool wantCursor = Time.unscaledTime - startedAt >= 1.9f * IntroSlow && !CreditsScreen.Active;      // (hidden again while the credits are on)
+        if (wantCursor && !cursorShown) { cursorShown = true; GameCursor.Request(this); }
+        else if (!wantCursor && cursorShown) { cursorShown = false; GameCursor.Release(this); }
+        if (CreditsScreen.Active) return;                                            // the credits are on top: the menu keeps still
         if (leaving >= 0f)
         {
             if (!loading && Time.unscaledTime - leaving > 0.5f)
@@ -122,7 +128,7 @@ public class MainMenu : MonoBehaviour
         }
         if (OptionsPanel.IsOpen) { OptionsPanel.Tick(); return; }                    // the options screen is on top: it handles the keys
         Keyboard kb = Keyboard.current;
-        if (kb == null || Time.unscaledTime - startedAt < 1.2f) return;
+        if (kb == null || Time.unscaledTime - startedAt < 1.2f * IntroSlow) return;       // (not before the menu has appeared)
         if (kb.sKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame) selected = (selected + 1) % 4;
         if (kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame) selected = (selected + 3) % 4;
         if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame) Choose(selected);
@@ -132,9 +138,9 @@ public class MainMenu : MonoBehaviour
     {
         switch (i)
         {
-            case 0: leaving = Time.unscaledTime; break;                    // Play: the screen fades out, then the first level loads
+            case 0: leaving = Time.unscaledTime; MusicDirector.StopMenu(0.45f); break;                  // Play: the screen fades out, then the first level loads
             case 1: OptionsPanel.Open(); break;                             // Options: the sound screen
-            case 2: break;                                                  // Credits: not made yet
+            case 2: CreditsScreen.Begin(); break;                           // Credits: the menu fades out, the credits roll
             case 3:
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
@@ -164,7 +170,7 @@ public class MainMenu : MonoBehaviour
             sky = MakeSky(); circle = MakeCircle(); triDown = MakeTriangle(true); triUp = MakeTriangle(false); vignette = MakeVignette(); band = MakeBand();
             boldSmall.wordWrap = false;
         }
-        float t = Time.unscaledTime - startedAt;
+        float t = (Time.unscaledTime - startedAt) / IntroSlow;       // the opening choreography (fade-in, title, cards sliding up) runs IntroSlow times slower
 
         // ---- the sky and the sun ----
         GUI.DrawTexture(new Rect(0, 0, w, h), sky);
@@ -180,13 +186,15 @@ public class MainMenu : MonoBehaviour
         // the options screen replaces the title and the menu (the poster stays dimmed behind it)
         if (OptionsPanel.IsOpen) { OptionsPanel.Draw(); return; }
         // a dark band on the left so the title and the menu read on top of the sky
-        GUI.color = new Color(0.05f, 0.02f, 0.08f, 1f);
+        float ui = CreditsScreen.MenuUiAlpha;                                // (the credits fade the menu's writing away and back)
+        GUI.color = new Color(0.05f, 0.02f, 0.08f, ui);
         GUI.DrawTexture(new Rect(0, 0, w * 0.42f, h), band);               // fades out towards the right
         GUI.color = Color.white;
 
         // ---- the title ----
         float fade = Mathf.Clamp01((t - 0.2f) / 0.8f), ease = 1f - Mathf.Pow(1f - fade, 3f);
         float drift = (1f - ease) * h * 0.04f;
+        ease *= ui;
         float left = w * 0.045f;
         titleStyle.alignment = TextAnchor.MiddleLeft;
         titleStyle.fontSize = Mathf.RoundToInt(h * 0.115f);
@@ -195,7 +203,7 @@ public class MainMenu : MonoBehaviour
         GtaMenuUI.Outlined(new Rect(left, h * 0.205f - drift, w * 0.5f, h * 0.15f), "Attendance", titleStyle, Gold, Mathf.Max(3f, h * 0.0075f), ease);
         titleStyle.alignment = TextAnchor.MiddleCenter;
         smallStyle.fontSize = Mathf.RoundToInt(h * 0.026f);
-        smallStyle.normal.textColor = new Color(1f, 0.97f, 0.9f, Mathf.Clamp01((t - 0.9f) / 0.6f));
+        smallStyle.normal.textColor = new Color(1f, 0.97f, 0.9f, Mathf.Clamp01((t - 0.9f) / 0.6f) * ui);
         GUI.Label(new Rect(left + 4f, h * 0.345f, w * 0.3f, h * 0.04f), "Reach class.  Hit 75%.", smallStyle);
 
         // ---- the menu: a plain list at the bottom left ----
@@ -206,7 +214,7 @@ public class MainMenu : MonoBehaviour
         bool moved = (mouse - lastMouse).sqrMagnitude > 0.5f; lastMouse = mouse;
         for (int i = 0; i < items.Length; i++)
         {
-            float a = Mathf.Clamp01((t - 1.0f - 0.12f * i) / 0.4f);
+            float a = Mathf.Clamp01((t - 1.0f - 0.12f * i) / 0.4f) * ui;
             if (leaving >= 0f) a *= 1f - Mathf.Clamp01((Time.unscaledTime - leaving) / 0.35f);
             Rect row = new Rect(left, listTop + i * itemH, w * 0.24f, itemH);
             if (leaving < 0f && a > 0.9f && moved && row.Contains(mouse)) selected = i;                // the mouse picks the row (only when it moves)
@@ -219,15 +227,14 @@ public class MainMenu : MonoBehaviour
                 Fill(new Rect(left + h * 0.05f, row.yMax - itemH * 0.14f, row.width * 0.7f, Mathf.Max(2f, h * 0.0035f)), new Color(Gold.r, Gold.g, Gold.b, 0.85f * a));
             }
             GtaMenuUI.Outlined(new Rect(left + h * 0.05f + shift, row.y, row.width, itemH), items[i], itemStyle, sel ? Gold : new Color(0.97f, 0.97f, 0.98f), Mathf.Max(2f, h * 0.0045f), a);
-            if (leaving < 0f && a > 0.9f && GUI.Button(row, GUIContent.none, GUIStyle.none)) Choose(i);
+            if (leaving < 0f && a > 0.9f && !CreditsScreen.Active && GUI.Button(row, GUIContent.none, GUIStyle.none)) Choose(i);
         }
 
         // ---- the rating box, like the one on a game cover ----
-        DrawRating(w, h, Mathf.Clamp01((t - 1.2f) / 0.6f));
+        DrawRating(w, h, Mathf.Clamp01((t - 1.2f) / 0.6f) * ui);
 
         // ---- fades: in from black when the menu opens, out to black when Play is pressed ----
-        float fadeIn = SplashScreen.Played ? 1.4f : 0.5f;                  // after the opening screens it fades in more slowly
-        if (t < fadeIn) Fill(new Rect(0, 0, w, h), new Color(0f, 0f, 0f, 1f - t / fadeIn));
+        if (t < 0.5f) Fill(new Rect(0, 0, w, h), new Color(0f, 0f, 0f, 1f - t / 0.5f));
         if (leaving >= 0f) Fill(new Rect(0, 0, w, h), new Color(0f, 0f, 0f, Mathf.Clamp01((Time.unscaledTime - leaving) / 0.45f)));
         GUI.color = Color.white;
     }
